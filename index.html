@@ -39,12 +39,25 @@
         .avatar {
             border-radius: 50%;
             width: 110px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 0, 0, 0.5); /* Bóng đổ mạnh hơn */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 0, 0, 0.5);
+            animation: bounce 2s infinite; /* Hiệu ứng nhấp nhô */
             transition: transform 0.3s;
         }
 
         .avatar:hover {
             transform: scale(1.1); /* Phóng to khi hover */
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-15px); /* Nhấc lên */
+            }
+            60% {
+                transform: translateY(-10px); /* Nhấc lên một chút nữa */
+            }
         }
 
         .title {
@@ -129,27 +142,6 @@
             margin-top: -60px;
         }
 
-        .loader-line-mask {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 60px;
-            height: 120px;
-            margin-left: -60px;
-            margin-top: -60px;
-            overflow: hidden;
-            transform-origin: 60px 60px;
-            -webkit-mask-image: -webkit-linear-gradient(top, #000000, rgba(0, 0, 0, 0));
-            animation: rotate 1.2s infinite linear;
-        }
-
-        .loader-line-mask .loader-line {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-        }
-
         #particles-background,
         #particles-foreground {
             left: -51%;
@@ -162,16 +154,6 @@
         #particles-background {
             background: #1e1e2f;
             background-image: linear-gradient(45deg, #3f3251 2%, #002025 100%);
-        }
-
-        @keyframes rotate {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
         }
 
         .modal {
@@ -248,12 +230,9 @@
     <div class="vertical-centered-box">
         <div class="content" id="openModal">
             <div class="loader-circle"></div>
-            <div class="loader-line-mask">
-                <div class="loader-line"></div>
-            </div>
             <img src="./tila.png" class="avatar">
         </div>
-        <h4 class="footer">----TILA TO THE MOON----</h4>
+        <h4 class="footer">TILA</h4>
     </div>
 
     <div id="myModal" class="modal">
