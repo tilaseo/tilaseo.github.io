@@ -22,8 +22,8 @@
             overflow: hidden;
             padding: 0;
             font-family: monospace;
-            background: #1e1e2f; /* Nền tối hơn */
-            color: #e0e0e0; /* Màu chữ sáng hơn */
+            background: #1e1e2f;
+            color: #e0e0e0;
         }
 
         iframe {
@@ -39,7 +39,12 @@
         .avatar {
             border-radius: 50%;
             width: 110px;
-            box-shadow: rgba(0, 0, 0, 0.5) 0px 3px 10px; /* Bóng đổ mạnh hơn */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 0, 0, 0.5); /* Bóng đổ mạnh hơn */
+            transition: transform 0.3s;
+        }
+
+        .avatar:hover {
+            transform: scale(1.1); /* Phóng to khi hover */
         }
 
         .title {
@@ -56,7 +61,7 @@
             text-transform: uppercase;
             color: #fff;
             font-size: 12pt;
-            background: rgba(0, 0, 0, 0.6); /* Nền tối trong suốt */
+            background: rgba(0, 0, 0, 0.6);
             width: 100%;
             height: 50px;
             display: flex;
@@ -72,7 +77,7 @@
             cursor: pointer;
             border: 1px solid #ff6969;
             padding: 6px 20px;
-            background: #ff4d4d; /* Màu nền xóa tối hơn */
+            background: #ff4d4d;
         }
 
         .open {
@@ -81,7 +86,7 @@
             cursor: pointer;
             border: 1px solid #21a52a;
             padding: 6px 20px;
-            background: #4caf50; /* Màu nền mở sáng hơn */
+            background: #4caf50;
         }
 
         .vertical-centered-box {
@@ -155,7 +160,7 @@
         }
 
         #particles-background {
-            background: #1e1e2f; /* Nền tối hơn */
+            background: #1e1e2f;
             background-image: linear-gradient(45deg, #3f3251 2%, #002025 100%);
         }
 
@@ -163,6 +168,7 @@
             0% {
                 transform: rotate(0deg);
             }
+
             100% {
                 transform: rotate(360deg);
             }
@@ -177,12 +183,12 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0, 0, 0, 0.7); /* Nền modal tối hơn */
+            background-color: rgba(0, 0, 0, 0.7);
             padding-top: 60px;
         }
 
         .modal-content {
-            background-color: #282828; /* Màu nền modal tối hơn */
+            background-color: #282828;
             padding: 20px;
             border: 1px solid #3a3a3a;
             border-radius: 12px;
@@ -204,7 +210,7 @@
 
         .close:hover,
         .close:focus {
-            color: #fff; /* Màu chữ khi hover */
+            color: #fff;
             text-decoration: none;
             cursor: pointer;
         }
@@ -218,14 +224,14 @@
         table,
         th,
         td {
-            border: 1px solid #3a3a3a; /* Biên bảng tối hơn */
+            border: 1px solid #3a3a3a;
             padding: 8px;
-            color: #e0e0e0; /* Màu chữ trong bảng sáng hơn */
+            color: #e0e0e0;
         }
 
         th {
-            background-color: #444; /* Nền bảng tối hơn */
-            color: #fff; /* Màu chữ trong header */
+            background-color: #444;
+            color: #fff;
         }
 
         td:last-child,
@@ -247,7 +253,7 @@
             </div>
             <img src="./tila.png" class="avatar">
         </div>
-        <h4 class="footer">TILASEO TO THE MOON</h4>
+        <h4 class="footer">----TILA TO THE MOON----</h4>
     </div>
 
     <div id="myModal" class="modal">
