@@ -22,7 +22,8 @@
             overflow: hidden;
             padding: 0;
             font-family: monospace;
-            background: #2c2d44;
+            background: #1e1e2f; /* Nền tối hơn */
+            color: #e0e0e0; /* Màu chữ sáng hơn */
         }
 
         iframe {
@@ -38,12 +39,13 @@
         .avatar {
             border-radius: 50%;
             width: 110px;
-            box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+            box-shadow: rgba(0, 0, 0, 0.5) 0px 3px 10px; /* Bóng đổ mạnh hơn */
         }
 
         .title {
             margin: 0;
             font-family: monospace;
+            color: #fff;
         }
 
         .footer {
@@ -54,32 +56,32 @@
             text-transform: uppercase;
             color: #fff;
             font-size: 12pt;
-            background: #00000038;
+            background: rgba(0, 0, 0, 0.6); /* Nền tối trong suốt */
             width: 100%;
             height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0;
-            padding: 4px 0 0;
+            padding: 4px 0;
         }
 
         .delete {
             border-radius: 4px;
-            color: #FFFFFF;
+            color: #fff;
             cursor: pointer;
             border: 1px solid #ff6969;
             padding: 6px 20px;
-            background: #ff3232;
+            background: #ff4d4d; /* Màu nền xóa tối hơn */
         }
 
         .open {
             border-radius: 4px;
-            color: #FFFFFF;
+            color: #fff;
             cursor: pointer;
             border: 1px solid #21a52a;
             padding: 6px 20px;
-            background: #36993a;
+            background: #4caf50; /* Màu nền mở sáng hơn */
         }
 
         .vertical-centered-box {
@@ -153,39 +155,16 @@
         }
 
         #particles-background {
-            background: #2c2d44;
-            background-image: -moz-linear-gradient(45deg, #3f3251 2%, #002025 100%);
-            background-image: -webkit-linear-gradient(45deg, #3f3251 2%, #002025 100%);
-            background-image: -webkit-linear-gradient(black, #3f3251 2%, #002025 100%);
+            background: #1e1e2f; /* Nền tối hơn */
+            background-image: linear-gradient(45deg, #3f3251 2%, #002025 100%);
         }
 
         @keyframes rotate {
             0% {
                 transform: rotate(0deg);
             }
-
             100% {
                 transform: rotate(360deg);
-            }
-        }
-
-        @keyframes fade {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.25;
-            }
-        }
-
-        @keyframes fade-in {
-            0% {
-                opacity: 0;
-            }
-
-            100% {
-                opacity: 1;
             }
         }
 
@@ -198,15 +177,14 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgb(0, 0, 0);
-            background-color: rgba(0, 0, 0, 0.4);
+            background-color: rgba(0, 0, 0, 0.7); /* Nền modal tối hơn */
             padding-top: 60px;
         }
 
         .modal-content {
-            background-color: #1a1a1a;
+            background-color: #282828; /* Màu nền modal tối hơn */
             padding: 20px;
-            border: 1px solid #272727;
+            border: 1px solid #3a3a3a;
             border-radius: 12px;
             color: #fff;
             position: fixed;
@@ -226,7 +204,7 @@
 
         .close:hover,
         .close:focus {
-            color: black;
+            color: #fff; /* Màu chữ khi hover */
             text-decoration: none;
             cursor: pointer;
         }
@@ -240,12 +218,14 @@
         table,
         th,
         td {
-            border: 1px solid #252525;
+            border: 1px solid #3a3a3a; /* Biên bảng tối hơn */
             padding: 8px;
+            color: #e0e0e0; /* Màu chữ trong bảng sáng hơn */
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: #444; /* Nền bảng tối hơn */
+            color: #fff; /* Màu chữ trong header */
         }
 
         td:last-child,
@@ -265,7 +245,7 @@
             <div class="loader-line-mask">
                 <div class="loader-line"></div>
             </div>
-            <img src="./avatar.JPG" class="avatar">
+            <img src="./tila.png" class="avatar">
         </div>
         <h4 class="footer">TILASEO</h4>
     </div>
