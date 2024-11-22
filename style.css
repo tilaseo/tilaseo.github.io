@@ -1,8 +1,8 @@
 :root {
-    --primary-color: #D2691E; /* Màu cam đất */
-    --secondary-color: #8B4513; /* Màu nâu đất */
-    --background-color: #FFEFDB; /* Màu be nhạt */
-    --text-color: #000000; /* Màu chữ đen */
+    --primary-color: #D2691E; 
+    --secondary-color: #8B4513;
+    --background-color: #FFEFDB; 
+    --text-color: #000000; 
   }
   
   * {
@@ -12,7 +12,7 @@
   }
   
   body {
-    background: radial-gradient(circle, #FF8C42, #D2691E, #8B4513); /* Gradient hợp mệnh Thổ */
+    background: radial-gradient(circle, #FF8C42, #D2691E, #8B4513); 
     font-family: 'Roboto', sans-serif;
     color: var(--text-color);
     display: flex;
@@ -32,6 +32,7 @@
   header h1 span {
     color: #FFD700;
     text-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700;
+    font-weigh: 600;
   }
   .ekg-container {
     position: relative;
@@ -57,8 +58,8 @@
     height: 100%;
     background-image: linear-gradient(0deg, rgba(0,255,0,0.2) 1px, transparent 1px),
                       linear-gradient(90deg, rgba(0,255,0,0.2) 1px, transparent 1px);
-    background-size: 20px 20px; /* Kích thước caro */
-    z-index: 1; /* Đảm bảo caro nằm trên nền */
+    background-size: 20px 20px; 
+    z-index: 1; 
   }
   
   .motion-wrapper {
@@ -73,11 +74,11 @@
   }
   
   .ekg-motion {
-    z-index: 2; /* Đảm bảo SVG nằm trên caro */
+    z-index: 2; 
     width: 100%;
     height: auto;
-    stroke: #00FF00; /* Màu xanh lá đậm */
-    filter: drop-shadow(0 0 10px #00FF00); /* Ánh sáng nhẹ */
+    stroke: #00FF00;
+    filter: drop-shadow(0 0 10px #00FF00); 
   }
   
   footer {
@@ -96,10 +97,10 @@
     color: black;
     font-size: 1.5rem;
     transition: transform 0.3s ease, color 0.3s ease;
-    text-decoration: none; /* Xóa dấu gạch chân */
+    text-decoration: none;
   }
   
   .social-icons a:hover {
-    color: #FFA500; /* Màu vàng sáng khi hover */
-    transform: scale(1.2); /* Phóng to nhẹ */
+    color: #FFA500; 
+    transform: scale(1.2); 
   }
