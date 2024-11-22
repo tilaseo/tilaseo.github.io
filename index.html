@@ -3,21 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TILASEO</title>
-  <link rel="stylesheet" href="/style.css">
+  <title>Personal Profile</title>
+  <link rel="stylesheet" href="styles/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <link rel="icon" href="./tila.png" type="image/x-icon">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>Hi, I'm <span>TILA</span></h1>
-      <p> MMO | Adapt To Thrive </p>
+    <header class="title-header">
+      <h1>
+        <span class="greeting">Hi, I'm</span>
+        <span class="name">TILA</span>
+      </h1>
+      <p class="subtitle">MMO | Adapt To Thrive</p>
     </header>
     <main>
+    <canvas id="space"></canvas>
     <div class="ekg-container">
       <div class="motion-wrapper">
         <svg class="ekg-motion" viewBox="0 0 1000 200">
@@ -43,6 +47,6 @@
         </div>
       </footer>      
   </div>
-  <script src="/script.js"></script>
+  <script src="scripts/script.js"></script>
 </body>
 </html>
