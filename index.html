@@ -1,310 +1,48 @@
 <!DOCTYPE html>
-<html lang="vi">
-
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tila LocalStorage For Airdrop</title>
-    <link rel="icon" href="./favicon.png" type="image/x-icon">
-    <style>
-        * {
-            transition: all 0.3s;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        body {
-            -webkit-font-smoothing: antialiased;
-            text-rendering: optimizeLegibility;
-            -webkit-user-select: none;
-            overflow: hidden;
-            padding: 0;
-            font-family: monospace;
-            background: #1e1e2f;
-            color: #e0e0e0;
-        }
-
-        iframe {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            border: none;
-            z-index: 10001;
-        }
-
-        .avatar {
-            border-radius: 50%;
-            width: 110px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 0, 0, 0.5); /* Bóng đổ mạnh hơn */
-            transition: transform 0.3s;
-        }
-
-        .avatar:hover {
-            transform: scale(1.1); /* Phóng to khi hover */
-        }
-
-        .title {
-            margin: 0;
-            font-family: monospace;
-            color: #fff;
-        }
-
-        .footer {
-            position: fixed;
-            left: 0;
-            z-index: 10000;
-            bottom: 0;
-            text-transform: uppercase;
-            color: #fff;
-            font-size: 12pt;
-            background: rgba(0, 0, 0, 0.6);
-            width: 100%;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-            padding: 4px 0;
-        }
-
-        .delete {
-            border-radius: 4px;
-            color: #fff;
-            cursor: pointer;
-            border: 1px solid #ff6969;
-            padding: 6px 20px;
-            background: #ff4d4d;
-        }
-
-        .open {
-            border-radius: 4px;
-            color: #fff;
-            cursor: pointer;
-            border: 1px solid #21a52a;
-            padding: 6px 20px;
-            background: #4caf50;
-        }
-
-        .vertical-centered-box {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            top: 0;
-            left: 0;
-        }
-
-        .vertical-centered-box:after {
-            content: '';
-            display: inline-block;
-            height: 100%;
-            vertical-align: middle;
-            margin-right: -0.25em;
-        }
-
-        .vertical-centered-box .content {
-            box-sizing: border-box;
-            display: inline-block;
-            vertical-align: middle;
-            text-align: left;
-            font-size: 0;
-            scale: 150%;
-            margin-top: -150px;
-            cursor: pointer;
-        }
-
-        .loader-circle {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-            margin-left: -60px;
-            margin-top: -60px;
-        }
-
-        .loader-line-mask {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 60px;
-            height: 120px;
-            margin-left: -60px;
-            margin-top: -60px;
-            overflow: hidden;
-            transform-origin: 60px 60px;
-            -webkit-mask-image: -webkit-linear-gradient(top, #000000, rgba(0, 0, 0, 0));
-            animation: rotate 1.2s infinite linear;
-        }
-
-        .loader-line-mask .loader-line {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-        }
-
-        #particles-background,
-        #particles-foreground {
-            left: -51%;
-            top: -51%;
-            width: 202%;
-            height: 202%;
-            transform: scale3d(0.5, 0.5, 1);
-        }
-
-        #particles-background {
-            background: #1e1e2f;
-            background-image: linear-gradient(45deg, #3f3251 2%, #002025 100%);
-        }
-
-        @keyframes rotate {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding-top: 60px;
-        }
-
-        .modal-content {
-            background-color: #282828;
-            padding: 20px;
-            border: 1px solid #3a3a3a;
-            border-radius: 12px;
-            color: #fff;
-            position: fixed;
-            left: 20px;
-            top: 20px;
-            right: 20px;
-            bottom: 75px;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            margin-top: -10px;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: #fff;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        table,
-        th,
-        td {
-            border: 1px solid #3a3a3a;
-            padding: 8px;
-            color: #e0e0e0;
-        }
-
-        th {
-            background-color: #444;
-            color: #fff;
-        }
-
-        td:last-child,
-        td:nth-child(2) {
-            width: 1%;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Profile</title>
+  <link rel="stylesheet" href="styles/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <link rel="icon" href="./tila.png" type="image/x-icon">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
-
 <body>
-    <div id="particles-background" class="vertical-centered-box"></div>
-    <div id="particles-foreground" class="vertical-centered-box"></div>
-
-    <div class="vertical-centered-box">
-        <div class="content" id="openModal">
-            <div class="loader-circle"></div>
-            <div class="loader-line-mask">
-                <div class="loader-line"></div>
-            </div>
-            <img src="./tila.png" class="avatar">
-        </div>
-        <h4 class="footer">- - - - - - - TILA TO THE MOON - - - - - - -</h4>
+  <div class="container">
+    <header>
+      <h1>Hi, I'm <span>TILA</span></h1>
+      <p> MMO | Adapt To Thrive </p>
+    </header>
+    <main>
+    <div class="ekg-container">
+      <div class="motion-wrapper">
+        <svg class="ekg-motion" viewBox="0 0 1000 200">
+          <path fill="none" stroke="var(--primary-color)" stroke-width="2"
+            d="M0 100 H100 L125 50 L150 150 L175 100 H200 H250 L275 50 L300 150 L325 100 H1000">
+          </path>
+        </svg>
+      </div>
     </div>
-
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 class="title">Quản lí dữ liệu</h2>
-            <table id="localStorageData">
-                <tbody></tbody>
-            </table>
+    </main>
+    <footer>
+        <p>&copy; 2024 TILA. All Rights Reserved.</p>
+        <div class="social-icons">
+          <a href="https://www.linkedin.com/in/chthai2011/" target="_blank" aria-label="LinkedIn">
+            <i class="fab fa-linkedin"></i>
+          </a>
+          <a href="https://www.facebook.com/chthai2011" target="_blank" aria-label="Facebook">
+            <i class="fab fa-facebook"></i>
+          </a>
+          <a href="https://t.me/tilaseo" target="_blank" aria-label="Telegram">
+            <i class="fab fa-telegram"></i>
+          </a>
         </div>
-    </div>
-
-    <script>
-        var modal = document.getElementById("myModal");
-        var btn = document.getElementById("openModal");
-        var span = document.getElementsByClassName("close")[0];
-        btn.onclick = function () {
-            modal.style.display = "block";
-        }
-        span.onclick = function () {
-            modal.style.display = "none";
-        }
-        window.onclick = function (event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-        document.addEventListener("DOMContentLoaded", function () {
-            var localStorageTable = document.getElementById('localStorageData').getElementsByTagName('tbody')[0];
-            for (var i = 0; i < localStorage.length; i++) {
-                var key = localStorage.key(i);
-                var value = localStorage.getItem(key);
-                var row = localStorageTable.insertRow();
-                var cell1 = row.insertCell(0);
-                var cell2 = row.insertCell(1);
-                var cell3 = row.insertCell(2);
-                cell1.innerHTML = key;
-                cell2.innerHTML = '<a href=' + value + ' class="open">Mở</a>';
-                var deleteButton = document.createElement("button");
-                deleteButton.setAttribute('class', 'delete');
-                deleteButton.innerHTML = "Xóa";
-                deleteButton.onclick = function () {
-                    var row = this.parentNode.parentNode;
-                    var key = row.cells[0].innerHTML;
-                    localStorage.removeItem(key);
-                    row.remove();
-                };
-                cell3.appendChild(deleteButton);
-            }
-        });
-    </script>
+      </footer>      
+  </div>
+  <script src="scripts/script.js"></script>
 </body>
-
 </html>
