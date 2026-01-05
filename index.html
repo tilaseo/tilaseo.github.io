@@ -12,6 +12,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
     <style>
         :root {
@@ -24,7 +25,6 @@
             --bg-card: #ffffff;
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
 
         * {
@@ -144,124 +144,154 @@
             transform: translateY(0);
         }
 
-        .stats {
+        /* Modern Stat Cards */
+        .stats-grid-modern {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
             margin-bottom: 40px;
         }
 
-        .stat-item {
-            background: var(--bg-card);
+        .stat-card-modern {
+            background: #fff;
+            border-radius: 20px;
             padding: 24px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
+        .stat-card-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-label-modern {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
             margin-bottom: 4px;
+        }
+
+        .stat-value-modern {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
             line-height: 1.2;
         }
 
-        .stat-label {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        /* Accordion Table */
+        .group-header {
+            cursor: pointer;
+            transition: background 0.15s;
         }
 
-        .chart-section {
-            margin-bottom: 40px;
+        .group-header:hover {
+            background-color: #f1f5f9 !important;
         }
 
-        .chart-header {
+        .toggle-icon {
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        .group-collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+
+        .group-collapsed+.group-rows {
+            display: none;
+        }
+
+        /* Tabs */
+        .tabs {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 0 10px;
+            gap: 20px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .chart-title {
-            font-size: 1.25rem;
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
             font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-btn:hover:not(.active) {
             color: var(--text-main);
         }
 
-        .chart-container {
-            position: relative;
-            height: 400px;
-            width: 100%;
-        }
-
-        .error {
-            background-color: #fef2f2;
-            color: #ef4444;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            border: 1px solid #fee2e2;
+        .tab-content {
             display: none;
-            text-align: center;
         }
 
-        .loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(4px);
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
         }
 
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--primary-light);
-            border-top: 3px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
             }
 
-            100% {
-                transform: rotate(360deg);
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            body {
-                padding: 20px 10px;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            button {
-                width: 100%;
-            }
+        /* SVG Icons Utility */
+        .icon-svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+            stroke: currentColor;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        input {
+            padding: 15px;
+            font-size: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            outline: none;
+            transition: border-color 0.2s;
         }
     </style>
 </head>
@@ -273,56 +303,173 @@
 
     <div class="container">
         <header>
-            <h1>Elon Musk X Tracker</h1>
-            <p class="subtitle">Analytics Dashboard & Activity Heatmap</p>
+            <h1>Polymarket Tracker</h1>
+            <p class="subtitle">Analytics & Account Dashboard</p>
         </header>
 
         <div id="error" class="error"></div>
 
-        <div class="controls">
-            <div class="input-group">
-                <label for="startDate">From Date</label>
-                <input type="date" id="startDate" value="2026-01-01">
-            </div>
-
-            <div class="input-group">
-                <label for="endDate">To Date</label>
-                <input type="date" id="endDate" value="2026-01-05">
-            </div>
-
-            <button onclick="loadData()">Update Analytics</button>
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('account')">Account Overview</button>
+            <button class="tab-btn" onclick="switchTab('elon')">Elon Musk Tracker</button>
         </div>
 
-        <div class="stats" id="stats">
-            <div class="stat-item">
-                <div class="stat-number" id="totalPosts">0</div>
-                <div class="stat-label">Total Posts</div>
+        <!-- Tab 1: Account -->
+        <div id="tab-account" class="tab-content active">
+            <div class="controls">
+                <div class="input-group wide" style="flex:2; min-width: 300px;">
+                    <label for="address">Wallet Address (Polygon)</label>
+                    <input type="text" id="address" placeholder="0x..." value="">
+                </div>
+                <button onclick="loadAccountData()">Load Account</button>
             </div>
-            <div class="stat-item">
-                <div class="stat-number" id="avgPosts">0</div>
-                <div class="stat-label">Daily Avg</div>
+
+            <div class="stats-grid-modern">
+                <div class="stat-card-modern">
+                    <div class="stat-icon">
+                        <svg class="icon-svg" viewBox="0 0 24 24">
+                            <path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5z" />
+                            <line x1="16" y1="12" x2="22" y2="12" />
+                            <path d="M19 12a3 3 0 1 1 0 6 3 3 0 0 1 0-6z" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label-modern">USDC Balance</div>
+                        <div class="stat-value-modern" id="usdcBalance">--</div>
+                    </div>
+                </div>
+
+                <div class="stat-card-modern">
+                    <div class="stat-icon" style="background:#eff6ff; color:#3b82f6;">
+                        <svg class="icon-svg" viewBox="0 0 24 24">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label-modern">Portfolio Value (Est)</div>
+                        <div class="stat-value-modern" id="portfolioValue">--</div>
+                    </div>
+                </div>
+
+                <div class="stat-card-modern">
+                    <div class="stat-icon" style="background:#f0fdf4; color:#16a34a;">
+                        <svg class="icon-svg" viewBox="0 0 24 24">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label-modern">Total Profit (All Time)</div>
+                        <div class="stat-value-modern" id="realizedPnl">--</div>
+                    </div>
+                </div>
             </div>
-            <div class="stat-item">
-                <div class="stat-number" id="heatPosts">0</div>
-                <div class="stat-label">Active Hours</div>
+
+            <div class="card">
+                <div class="chart-header">
+                    <div class="chart-title">Active Positions (Open Orders/Held)</div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #f1f5f9; text-align: left;">
+                                <th style="padding: 12px;">Outcome (Grouped)</th>
+                                <th style="padding: 12px;">Market Value</th>
+                                <th style="padding: 12px;">Payout Size</th>
+                                <th style="padding: 12px;">Avg Price</th>
+                                <th style="padding: 12px;">PnL %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="positionsTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align:center; padding: 20px; color: #94a3b8;">No active
+                                    positions loaded</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="chart-header">
+                    <div class="chart-title">Recent Trades (Settled)</div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #f1f5f9; text-align: left;">
+                                <th style="padding: 12px;">Date</th>
+                                <th style="padding: 12px;">Market</th>
+                                <th style="padding: 12px;">Result</th>
+                                <th style="padding: 12px;">Payout</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradesTableBody">
+                            <tr>
+                                <td colspan="4" style="text-align:center; padding: 20px; color: #94a3b8;">No settled
+                                    trades
+                                    loaded</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="chart-header">
-                <div class="chart-title">Activity Trend</div>
+        <!-- Tab 2: Elon -->
+        <div id="tab-elon" class="tab-content">
+            <div class="controls">
+                <div class="input-group">
+                    <label for="startDate">From Date</label>
+                    <input type="date" id="startDate" value="2026-01-01">
+                </div>
+                <div class="input-group">
+                    <label for="endDate">To Date</label>
+                    <input type="date" id="endDate" value="2026-01-05">
+                </div>
+                <button onclick="loadElonData()">Load Activity</button>
             </div>
-            <div class="chart-container">
-                <canvas id="postsChart"></canvas>
-            </div>
-        </div>
 
-        <div class="card">
-            <div class="chart-header">
-                <div class="chart-title">Activity Heatmap (UTC)</div>
+            <h2 class="section-title" style="margin-left: 5px; margin-bottom: 20px; font-weight:600; color:#334155;">
+                Elon Musk Activity</h2>
+
+            <div class="stats-grid-modern">
+                <div class="stat-card-modern">
+                    <div class="stat-content">
+                        <div class="stat-label-modern">Total Posts</div>
+                        <div class="stat-value-modern" id="totalPosts">0</div>
+                    </div>
+                </div>
+                <div class="stat-card-modern">
+                    <div class="stat-content">
+                        <div class="stat-label-modern">Daily Avg</div>
+                        <div class="stat-value-modern" id="avgPosts">0</div>
+                    </div>
+                </div>
+                <div class="stat-card-modern">
+                    <div class="stat-content">
+                        <div class="stat-label-modern">Active Hours</div>
+                        <div class="stat-value-modern" id="heatPosts">0</div>
+                    </div>
+                </div>
             </div>
-            <div class="chart-container">
-                <canvas id="heatChart"></canvas>
+
+            <div class="card">
+                <div class="chart-header">
+                    <div class="chart-title">Activity Trend</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="postsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="chart-header">
+                    <div class="chart-title">Activity Heatmap (UTC)</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="heatChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -332,7 +479,12 @@
         let heatChart = null;
         const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const primaryColor = '#37af8c';
-        const primaryColorTrans = 'rgba(55, 175, 140, 0.15)';
+
+        // Polymarket / Polygon Config
+        const POLYGON_RPC = 'https://polygon-rpc.com';
+        const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
+        const USDC_ABI = ['function balanceOf(address) view returns (uint256)'];
+        const DATA_API_BASE = 'https://data-api.polymarket.com';
 
         // Chart Global Defaults
         Chart.defaults.font.family = "'Outfit', sans-serif";
@@ -352,41 +504,313 @@
             document.getElementById('loading').style.display = show ? 'flex' : 'none';
         }
 
-        async function loadData() {
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            const btn = document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`);
+            if (btn) btn.classList.add('active');
+
+            const content = document.getElementById(`tab-${tab}`);
+            if (content) content.classList.add('active');
+        }
+
+        async function loadAccountData() {
             showLoading(true);
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
+            showError('');
+            try {
+                const address = document.getElementById('address').value.trim();
+                // Validate address if needed
+                if (!address) throw new Error("Please enter a wallet address");
 
-            if (!startDate || !endDate) {
-                showError('Please select a valid date range.');
+                await Promise.all([
+                    fetchBalance(address),
+                    fetchPositions(address),
+                    fetchTrades(address),
+                    fetchRealizedPnl(address)
+                ]);
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Error: ${error.message}`);
+            } finally {
                 showLoading(false);
-                return;
             }
+        }
 
+        async function loadElonData() {
+            showLoading(true);
+            showError('');
+            try {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                if (!startDate || !endDate) throw new Error("Please select dates");
+
+                await fetchElonData(startDate, endDate);
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Error: ${error.message}`);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function fetchBalance(address) {
+            try {
+                const provider = new ethers.providers.JsonRpcProvider(POLYGON_RPC);
+                const contract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
+                const balance = await contract.balanceOf(address);
+                const formatted = ethers.utils.formatUnits(balance, 6);
+                document.getElementById('usdcBalance').textContent = formatCurrency(formatted);
+            } catch (e) {
+                console.error("Balance Error", e);
+                document.getElementById('usdcBalance').textContent = 'Error';
+            }
+        }
+
+        // Toggle Group Function
+        function toggleGroup(header) {
+            header.classList.toggle('group-collapsed');
+            const row = header.nextElementSibling;
+            if (row && row.classList.contains('group-rows')) {
+                row.style.display = header.classList.contains('group-collapsed') ? 'none' : 'table-row';
+            }
+        }
+
+        async function fetchRealizedPnl(address) {
+            try {
+                const url = `${DATA_API_BASE}/v1/leaderboard?user=${address}&timePeriod=ALL`;
+                const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+                const res = await fetch(proxyUrl);
+                const data = await res.json();
+
+                // API returns array of users. Match by proxyWallet.
+                const userStats = data.find(u => (u.proxyWallet || '').toLowerCase() === address.toLowerCase()) || data[0];
+
+                // Check for 'pnl' field as per user API sample
+                if (userStats && userStats.pnl !== undefined) {
+                    const profit = parseFloat(userStats.pnl);
+                    const isPositive = profit >= 0;
+                    const color = isPositive ? '#37af8c' : '#ef4444';
+                    const sign = isPositive ? '+' : '';
+
+                    document.getElementById('realizedPnl').innerHTML = `
+                       <span style="color:${color}">${sign}${formatCurrency(profit)}</span>
+                    `;
+                } else {
+                    document.getElementById('realizedPnl').textContent = "$0.00";
+                }
+            } catch (e) {
+                console.error("Leaderboard PnL Error", e);
+                document.getElementById('realizedPnl').textContent = "--";
+            }
+        }
+
+        async function fetchPositions(address) {
+            try {
+                const url = `${DATA_API_BASE}/positions?user=${address}`;
+                // Fallback to proxy if fails? Try direct first. Polymarket Data API usually CORS open? use proxy to be safe.
+                const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+
+                const res = await fetch(proxyUrl);
+                const data = await res.json();
+
+                const tbody = document.getElementById('positionsTableBody');
+                tbody.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color:#94a3b8">No active positions</td></tr>';
+                    return;
+                }
+
+                // Group by Event Slug
+                const groups = {};
+                data.forEach(pos => {
+                    const key = pos.eventSlug || pos.slug;
+                    if (!groups[key]) {
+                        // smart formatting for event title from slug if generic
+                        let displayTitle = pos.eventSlug || pos.title;
+
+                        // Heuristic: specific styling for EPL/Sports
+                        if (pos.eventSlug && pos.eventSlug.includes('-')) {
+                            const parts = pos.eventSlug.split('-');
+                            if (parts.length > 3) {
+                                const date = parts.slice(-3).join('-');
+                                const teams = parts.slice(1, -3).join(' vs ');
+                                const league = parts[0].toUpperCase();
+                                displayTitle = `${league}: ${teams} <span style="font-weight:400; color:#94a3b8; font-size:0.85em">(${date})</span>`;
+                            } else {
+                                displayTitle = pos.eventSlug;
+                            }
+                        } else {
+                            displayTitle = pos.title;
+                        }
+
+                        groups[key] = {
+                            title: displayTitle,
+                            icon: pos.icon,
+                            positions: []
+                        };
+                    }
+                    groups[key].positions.push(pos);
+                });
+
+                let totalPortfolioValue = 0;
+
+                Object.values(groups).forEach((group, index) => {
+                    const uniqueId = `group-${index}`;
+
+                    // Render Group Header
+                    const groupRow = `
+                        <tr class="group-header" onclick="toggleGroup(this)">
+                            <td colspan="5" style="padding: 16px; font-weight: 600; color: #334155; border-bottom: 1px solid #e2e8f0; background:#f8fafc;">
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <span class="toggle-icon">▼</span>
+                                    <img src="${group.icon}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;" onerror="this.style.display='none'">
+                                    <span style="text-transform: capitalize;">${group.title}</span>
+                                    <span style="margin-left:auto; font-size:0.85rem; color:#94a3b8; font-weight:400">${group.positions.length} outcomes</span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += groupRow;
+
+                    let positionsHtml = '';
+                    group.positions.forEach(pos => {
+                        const size = parseFloat(pos.size || 0);
+                        if (size < 0.0001) return;
+
+                        const avgPrice = parseFloat(pos.avgPrice || 0);
+                        const curPrice = parseFloat(pos.curPrice || 0);
+                        const currentValue = parseFloat(pos.currentValue || 0);
+                        const pnlPercent = parseFloat(pos.percentPnl || 0);
+
+                        totalPortfolioValue += currentValue;
+
+                        const pnlColor = pnlPercent >= 0 ? '#10b981' : '#ef4444';
+                        const pnlSign = pnlPercent >= 0 ? '+' : '';
+
+                        // Formatted Size (Payout) in Dollars
+                        const payoutSize = formatCurrency(size).replace('$', '');
+
+                        let label = pos.title.replace(/^Will /, '').replace(/\?$/, '');
+                        const outcomeColor = pos.outcome === 'Yes' ? '#10b981' : '#f59e0b';
+
+                        positionsHtml += `
+                            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; padding: 12px; border-bottom: 1px dashed #f1f5f9; align-items:center;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding-right:15px;">
+                                    <span style="color: #475569; font-size: 0.9em;">${label}</span>
+                                    <span style="font-size:0.75rem; font-weight:700; color:${outcomeColor}; bg-opacity:0.1; background:${outcomeColor}20; padding:2px 8px; border-radius:4px;">${pos.outcome}</span>
+                                </div>
+                                <div>${formatCurrency(currentValue)}</div>
+                                <div>$${payoutSize}</div>
+                                <div>${(avgPrice * 100).toFixed(1)}¢</div>
+                                <div style="color: ${pnlColor}; font-weight: 500;">${pnlSign}${pnlPercent.toFixed(2)}%</div>
+                            </div>
+                        `;
+                    });
+
+                    const childrenRow = `
+                        <tr class="group-rows" style="display:table-row">
+                            <td colspan="5" style="padding:0;">
+                                <div style="background:#fff;">
+                                    ${positionsHtml}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += childrenRow;
+                });
+
+                document.getElementById('portfolioValue').textContent = formatCurrency(totalPortfolioValue);
+
+            } catch (e) {
+                console.error("Positions Error", e);
+            }
+        }
+
+        function cleanTitle(title) {
+            return title;
+        }
+
+        async function fetchTrades(address) {
+            try {
+                // Fetch Activity, limit 50 to get enough REDEEMs
+                const url = `${DATA_API_BASE}/activity?user=${address}&limit=50`;
+                const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+                const res = await fetch(proxyUrl);
+                const data = await res.json();
+
+                const tbody = document.getElementById('tradesTableBody');
+                tbody.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color:#94a3b8">No trade history</td></tr>';
+                    return;
+                }
+
+                // Filter for REDEEM only
+                const closedTrades = data.filter(t => t.type === 'REDEEM');
+
+                if (closedTrades.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color:#94a3b8">No recent settled trades (REDEEM)</td></tr>';
+                    return;
+                }
+
+                let totalRealizedPnl = 0;
+
+                closedTrades.forEach(trade => {
+                    const time = new Date(trade.timestamp * 1000).toLocaleDateString();
+
+                    // Logic: size > 0 => Payment Received (WIN). size == 0 => Expired (LOSS).
+                    const size = parseFloat(trade.size || 0); // Payout amount
+                    const isWin = size > 0;
+
+                    const outcomeBadge = isWin
+                        ? `<span style="display:inline-block; padding:4px 12px; border-radius:99px; background:#dcfce7; color:#166534; font-size:0.8rem; font-weight:600">WIN</span>`
+                        : `<span style="display:inline-block; padding:4px 12px; border-radius:99px; background:#fee2e2; color:#991b1b; font-size:0.8rem; font-weight:600">LOST</span>`;
+
+                    const payoutInfo = isWin
+                        ? `<span style="color:#10b981; font-weight:600;">+${formatCurrency(size)}</span>`
+                        : `<span style="color:#94a3b8;">$0.00</span>`;
+
+                    const row = `
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 12px; font-size:0.85rem">${time}</td>
+                            <td style="padding: 12px;">${trade.title || trade.marketSlug}</td>
+                            <td style="padding: 12px;">${outcomeBadge}</td>
+                            <td style="padding: 12px;">${payoutInfo}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+
+                    if (isWin) totalRealizedPnl += size;
+                });
+
+                document.getElementById('realizedPnl').innerHTML = `
+                    ${formatCurrency(totalRealizedPnl)} 
+                    <span style="font-size:0.5em; display:block; color:#94a3b8; font-weight:400;">(Recent Payouts)</span>
+                `;
+
+            } catch (e) {
+                console.error("Trades Error", e);
+            }
+        }
+
+        async function fetchElonData(startDate, endDate) {
             const startIso = `${startDate}T17:00:00.000Z`;
             const endIso = `${endDate}T17:00:59.000Z`;
             const url = `https://xtracker.polymarket.com/api/users/elonmusk/posts?startDate=${startIso}&endDate=${endIso}`;
             const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
 
-            try {
-                showError('');
+            const response = await fetch(proxyUrl);
+            const result = await response.json();
+            const data = result.data || result || [];
 
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-                const result = await response.json();
-                const data = result.data || result || [];
-
-                if (data.length === 0) throw new Error('No data found for this period.');
-
-                processData(data, startDate, endDate);
-
-            } catch (error) {
-                console.error('Error:', error);
-                showError(`Failed to load data: ${error.message}`);
-            } finally {
-                showLoading(false);
-            }
+            if (data.length > 0) processData(data, startDate, endDate);
         }
 
         function processData(posts, startStr, endStr) {
@@ -604,7 +1028,7 @@
             errorDiv.style.display = message ? 'block' : 'none';
         }
 
-        window.onload = () => loadData();
+        window.onload = () => loadDashboard();
     </script>
 </body>
 
