@@ -230,9 +230,12 @@
             const matrix = Array.from({length: 7}, () => Array(24).fill(0));
             posts.forEach(post => {
                 const date = new Date(post.createdAt);
+                if (isNaN(date.getTime())) return; // Bỏ qua nếu date invalid
                 const hour = date.getUTCHours(); // 0-23 UTC
                 const weekday = date.getUTCDay(); // 0=Sun, 6=Sat
-                matrix[weekday][hour]++;
+                if (hour >= 0 && hour < 24 && weekday >= 0 && weekday < 7) {
+                    matrix[weekday][hour]++;
+                }
             });
 
             // Chuyển ma trận thành data cho matrix chart
@@ -240,7 +243,7 @@
             let maxValue = 0;
             for (let y = 0; y < 7; y++) {
                 for (let x = 0; x < 24; x++) {
-                    const value = matrix[y][x];
+                    const value = matrix[y][x] || 0; // Đảm bảo number
                     heatData.push({ x, y, v: value });
                     if (value > maxValue) maxValue = value;
                 }
@@ -296,10 +299,11 @@
                         width: ({chart}) => (chart.chartArea || {}).width / 24,
                         height: ({chart}) => (chart.chartArea || {}).height / 7,
                         backgroundColor: context => {
-                            if (context.parsed.v === 0) {
+                            const val = context.parsed.v || 0; // Đảm bảo val là number
+                            if (val === 0) {
                                 return 'rgba(0, 0, 0, 0)'; // Transparent cho 0
                             }
-                            const alpha = context.parsed.v / (maxValue || 1);
+                            const alpha = Math.min(1, val / Math.max(maxValue, 1)); // Tránh chia 0
                             return `rgba(54, 162, 235, ${alpha})`; // Xanh dương, alpha theo mật độ
                         },
                         borderColor: 'rgba(0, 0, 0, 0.1)',
@@ -312,8 +316,14 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                title: context => `${weekdays[context[0].parsed.y]} - ${context[0].parsed.x}:00 UTC`,
-                                label: context => `${context.parsed.v} posts`
+                                title: context => {
+                                    const parsed = context[0].parsed;
+                                    return `${weekdays[parsed.y || 0]} - ${(parsed.x || 0)}:00 UTC`;
+                                },
+                                label: context => {
+                                    const val = context.parsed.v || 0;
+                                    return `${val} posts`;
+                                }
                             }
                         }
                     },
@@ -334,7 +344,7 @@
                             min: 0,
                             max: 6,
                             ticks: {
-                                callback: value => weekdays[value]
+                                callback: value => weekdays[value || 0]
                             },
                             title: { display: true, text: 'Ngày Trong Tuần' },
                             reverse: false // Sun ở trên, Sat ở dưới
