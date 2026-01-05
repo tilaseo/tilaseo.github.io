@@ -1,55 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TILA</title>
-  <link rel="stylesheet" href="/style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-  <link rel="icon" href="./tila.png" type="image/x-icon">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Theo Dõi Posts Elon Musk</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="date"] {
+            padding: 8px;
+            margin-bottom: 10px;
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+            flex: 1;
+            margin: 0 10px;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        #chartContainer {
+            position: relative;
+            height: 400px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <header class="title-header">
-      <h1>
-        <span class="greeting">Hi, I'm</span>
-        <span class="name">TILA</span>
-      </h1>
-      <p class="subtitle">MMO | Adapt To Thrive</p>
-    </header>
-    <main>
-    <canvas id="space"></canvas>
-    <div class="ekg-container">
-      <div class="motion-wrapper">
-        <svg class="ekg-motion" viewBox="0 0 1000 200">
-          <path fill="none" stroke="#37af8c" stroke-width="3"
-            d="M0 100 H100 L125 50 L150 150 L175 100 H200 H250 L275 50 L300 150 L325 100 H1000">
-          </path>
-        </svg>
-      </div>
+    <div class="container">
+        <h1>Dashboard Theo Dõi Posts Elon Musk</h1>
+        
+        <div class="controls">
+            <label for="startDate">Ngày bắt đầu (YYYY-MM-DD):</label>
+            <input type="date" id="startDate" value="2026-01-01">
+            
+            <label for="endDate">Ngày kết thúc (YYYY-MM-DD):</label>
+            <input type="date" id="endDate" value="2026-01-05">
+            
+            <button onclick="loadData()">Tải Dữ Liệu</button>
+        </div>
+        
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-number" id="totalPosts">0</div>
+                <div class="stat-label">Tổng Số Posts</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="avgPosts">0</div>
+                <div class="stat-label">Trung Bình Posts/Ngày</div>
+            </div>
+        </div>
+        
+        <div id="chartContainer">
+            <canvas id="postsChart"></canvas>
+        </div>
     </div>
-    </main>
-    <footer>
-        <div class="menu-footer">
-          <a href="/privacy-policy.html">Privacy Policy</a> | <a href="/terms.html">Terms of Service</a>      
-        </div>
-        <p>&copy; 2024 TILA. All Rights Reserved.</p>
-        <div class="social-icons">
-          <a href="https://www.linkedin.com/in/chthai2011/" target="_blank" aria-label="LinkedIn">
-            <i class="fab fa-linkedin"></i>
-          </a>
-          <a href="https://www.facebook.com/chthai2011" target="_blank" aria-label="Facebook">
-            <i class="fab fa-facebook"></i>
-          </a>
-          <a href="https://t.me/tilaseo" target="_blank" aria-label="Telegram">
-            <i class="fab fa-telegram"></i>
-          </a>
-        </div>
-      </footer>      
-  </div>
-  <script src="/script.js"></script>
+
+    <script>
+        let chart = null;
+
+        async function loadData() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                showError('Vui lòng chọn ngày bắt đầu và kết thúc.');
+                return;
+            }
+
+            // Chuyển đổi sang định dạng ISO cho API
+            const startIso = `${startDate}T17:00:00.000Z`;
+            const endIso = `${endDate}T17:00:59.000Z`;
+            
+            const url = `https://xtracker.polymarket.com/api/users/elonmusk/posts?startDate=${startIso}&endDate=${endIso}`;
+            
+            try {
+                showError(''); // Xóa lỗi cũ
+                document.getElementById('stats').style.display = 'none';
+                
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error('API trả về không thành công.');
+                }
+                
+                const data = result.data || [];
+                processData(data, startDate, endDate);
+                
+            } catch (error) {
+                showError(`Lỗi khi tải dữ liệu: ${error.message}`);
+            }
+        }
+
+        function processData(posts, startStr, endStr) {
+            // Group posts by day (YYYY-MM-DD)
+            const dailyCounts = {};
+            posts.forEach(post => {
+                const date = new Date(post.createdAt);
+                const dayKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+                dailyCounts[dayKey] = (dailyCounts[dayKey] || 0) + 1;
+            });
+
+            // Tạo danh sách ngày từ start đến end
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+            const days = [];
+            const counts = [];
+            let current = new Date(start);
+            while (current <= end) {
+                const dayKey = current.toISOString().split('T')[0];
+                days.push(dayKey);
+                counts.push(dailyCounts[dayKey] || 0);
+                current.setDate(current.getDate() + 1);
+            }
+
+            // Tính tổng và trung bình
+            const totalPosts = posts.length;
+            const numDays = days.length;
+            const avgPosts = numDays > 0 ? (totalPosts / numDays).toFixed(2) : 0;
+
+            // Cập nhật stats
+            document.getElementById('totalPosts').textContent = totalPosts;
+            document.getElementById('avgPosts').textContent = avgPosts;
+            document.getElementById('stats').style.display = 'flex';
+
+            // Vẽ biểu đồ
+            renderChart(days, counts);
+        }
+
+        function renderChart(labels, data) {
+            const ctx = document.getElementById('postsChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Số Lượng Posts Hàng Ngày',
+                        data: data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = message ? 'block' : 'none';
+        }
+
+        // Tải dữ liệu mặc định khi load trang
+        window.onload = () => loadData();
+    </script>
 </body>
 </html>
