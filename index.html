@@ -73,11 +73,23 @@
             color: red;
             margin-top: 10px;
         }
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Dashboard Theo Dõi Posts Elon Musk</h1>
+        
+        <div class="note">
+            <strong>Lưu ý:</strong> Để tránh lỗi CORS, yêu cầu API được proxy qua dịch vụ miễn phí (corsproxy.io). Nếu gặp lỗi proxy, thử refresh hoặc thay proxy khác (ví dụ: allorigins.win).
+        </div>
         
         <div class="controls">
             <label for="startDate">Ngày bắt đầu (YYYY-MM-DD):</label>
@@ -123,13 +135,16 @@
             const startIso = `${startDate}T17:00:00.000Z`;
             const endIso = `${endDate}T17:00:59.000Z`;
             
-            const url = `https://xtracker.polymarket.com/api/users/elonmusk/posts?startDate=${startIso}&endDate=${endIso}`;
+            let url = `https://xtracker.polymarket.com/api/users/elonmusk/posts?startDate=${startIso}&endDate=${endIso}`;
+            
+            // Sử dụng CORS proxy để tránh lỗi CORS
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
             
             try {
                 showError(''); // Xóa lỗi cũ
                 document.getElementById('stats').style.display = 'none';
                 
-                const response = await fetch(url);
+                const response = await fetch(proxyUrl);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -143,7 +158,8 @@
                 processData(data, startDate, endDate);
                 
             } catch (error) {
-                showError(`Lỗi khi tải dữ liệu: ${error.message}`);
+                console.error('Lỗi chi tiết:', error);
+                showError(`Lỗi khi tải dữ liệu: ${error.message}. Kiểm tra console để xem thêm.`);
             }
         }
 
