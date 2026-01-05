@@ -143,6 +143,12 @@
         let heatChart = null;
         const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+        // Đăng ký Matrix controller sau khi load plugin
+        if (typeof Chart !== 'undefined' && Chart.register) {
+            const { MatrixController, MatrixElement } = window['chartjs-chart-matrix'];
+            Chart.register(MatrixController, MatrixElement);
+        }
+
         async function loadData() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
