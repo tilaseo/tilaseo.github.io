@@ -88,7 +88,7 @@
         <h1>Dashboard Theo Dõi Posts Elon Musk</h1>
         
         <div class="note">
-            <strong>Lưu ý:</strong> Để tránh lỗi CORS, yêu cầu API được proxy qua dịch vụ miễn phí (corsproxy.io). Nếu gặp lỗi proxy, thử refresh hoặc thay proxy khác (ví dụ: allorigins.win).
+            <strong>Lưu ý:</strong> Sử dụng proxy CORS miễn phí (codetabs.com) để tránh lỗi CORS. Nếu gặp 403, thử refresh hoặc thay proxy (ví dụ: allorigins.win). API có thể có rate limit.
         </div>
         
         <div class="controls">
@@ -135,10 +135,10 @@
             const startIso = `${startDate}T17:00:00.000Z`;
             const endIso = `${endDate}T17:00:59.000Z`;
             
-            let url = `https://xtracker.polymarket.com/api/users/elonmusk/posts?startDate=${startIso}&endDate=${endIso}`;
+            const url = `https://xtracker.polymarket.com/api/users/elonmusk/posts?startDate=${startIso}&endDate=${endIso}`;
             
-            // Sử dụng CORS proxy để tránh lỗi CORS
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+            // Sử dụng CORS proxy codetabs.com để tránh lỗi CORS
+            const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
             
             try {
                 showError(''); // Xóa lỗi cũ
@@ -150,16 +150,17 @@
                 }
                 const result = await response.json();
                 
-                if (!result.success) {
-                    throw new Error('API trả về không thành công.');
+                // API có thể không có "success", chỉ "data"
+                const data = result.data || result || [];
+                if (data.length === 0) {
+                    throw new Error('Không có dữ liệu posts trong khoảng thời gian này.');
                 }
                 
-                const data = result.data || [];
                 processData(data, startDate, endDate);
                 
             } catch (error) {
                 console.error('Lỗi chi tiết:', error);
-                showError(`Lỗi khi tải dữ liệu: ${error.message}. Kiểm tra console để xem thêm.`);
+                showError(`Lỗi khi tải dữ liệu: ${error.message}. Kiểm tra console để xem thêm. Nếu 403, thử proxy khác.`);
             }
         }
 
