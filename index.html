@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Theo Dõi Posts Elon Musk</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3.0.1"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -55,7 +55,7 @@
             background: #e9ecef;
             border-radius: 4px;
             flex: 1;
-            margin: 0 10px;
+            margin: 0 5px;
         }
         .stat-number {
             font-size: 2em;
@@ -63,7 +63,7 @@
             color: #007bff;
         }
         .stat-label {
-            font-size: 0.9em;
+            font-size: 0.8em;
             color: #6c757d;
         }
         .chart-section {
@@ -90,6 +90,14 @@
             margin-bottom: 20px;
             font-size: 0.9em;
         }
+        .debug {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -97,7 +105,7 @@
         <h1>Dashboard Theo Dõi Posts Elon Musk</h1>
         
         <div class="note">
-            <strong>Lưu ý:</strong> Sử dụng proxy CORS miễn phí (codetabs.com) để tránh lỗi CORS. Nếu gặp 403, thử refresh hoặc thay proxy (ví dụ: allorigins.win). API có thể có rate limit. Heatmap hiển thị mật độ theo giờ (UTC) và ngày trong tuần (Sun ở trên, Mon-Sat theo chiều kim đồng hồ).
+            <strong>Lưu ý:</strong> Sử dụng proxy CORS miễn phí (codetabs.com) để tránh lỗi CORS. Nếu gặp 403, thử refresh hoặc thay proxy. Heatmap tổng hợp mật độ từ dữ liệu thực tế (nên có dữ liệu xanh ở hàng Sun/Thu/Fri/Sat, giờ 13-20 UTC).
         </div>
         
         <div class="controls">
@@ -112,6 +120,8 @@
         
         <div id="error" class="error" style="display: none;"></div>
         
+        <div class="debug" id="debug" style="display: none;"></div>
+        
         <div class="stats" id="stats" style="display: none;">
             <div class="stat-item">
                 <div class="stat-number" id="totalPosts">0</div>
@@ -119,7 +129,11 @@
             </div>
             <div class="stat-item">
                 <div class="stat-number" id="avgPosts">0</div>
-                <div class="stat-label">Trung Bình Posts/Ngày</div>
+                <div class="stat-label">TB Posts/Ngày</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="heatPosts">0</div>
+                <div class="stat-label">Posts in Heatmap</div>
             </div>
         </div>
         
@@ -170,6 +184,7 @@
             try {
                 showError(''); // Xóa lỗi cũ
                 document.getElementById('stats').style.display = 'none';
+                document.getElementById('debug').style.display = 'none';
                 
                 const response = await fetch(proxyUrl);
                 if (!response.ok) {
@@ -221,33 +236,47 @@
             // Cập nhật stats
             document.getElementById('totalPosts').textContent = totalPosts;
             document.getElementById('avgPosts').textContent = avgPosts;
-            document.getElementById('stats').style.display = 'flex';
 
             // Vẽ line chart
             renderLineChart(days, counts);
 
             // Xử lý heatmap: ma trận 7x24 (weekday x hour)
             const matrix = Array.from({length: 7}, () => Array(24).fill(0));
+            let validHeatPosts = 0;
+            if (posts.length > 0) {
+                const firstDate = new Date(posts[0].createdAt);
+                const debugInfo = `First post: ${posts[0].createdAt}<br>Parsed: ${firstDate.toISOString()}<br>Hour: ${firstDate.getUTCHours()}, Weekday: ${firstDate.getUTCDay()} (${weekdays[firstDate.getUTCDay()]})`;
+                document.getElementById('debug').innerHTML = `<strong>Debug Info:</strong><br>${debugInfo}`;
+                document.getElementById('debug').style.display = 'block';
+            }
             posts.forEach(post => {
                 const date = new Date(post.createdAt);
-                if (isNaN(date.getTime())) return; // Bỏ qua nếu date invalid
-                const hour = date.getUTCHours(); // 0-23 UTC
-                const weekday = date.getUTCDay(); // 0=Sun, 6=Sat
-                if (hour >= 0 && hour < 24 && weekday >= 0 && weekday < 7) {
+                if (isNaN(date.getTime())) return;
+                const hour = date.getUTCHours();
+                const weekday = date.getUTCDay();
+                if (!isNaN(hour) && hour >= 0 && hour < 24 && !isNaN(weekday) && weekday >= 0 && weekday < 7) {
                     matrix[weekday][hour]++;
+                    validHeatPosts++;
                 }
             });
+
+            // Tính tổng posts in heatmap để debug
+            document.getElementById('heatPosts').textContent = validHeatPosts;
+            document.getElementById('stats').style.display = 'flex';
+
+            console.log('Valid heat posts:', validHeatPosts, 'Total posts:', totalPosts);
 
             // Chuyển ma trận thành data cho matrix chart
             const heatData = [];
             let maxValue = 0;
             for (let y = 0; y < 7; y++) {
                 for (let x = 0; x < 24; x++) {
-                    const value = matrix[y][x] || 0; // Đảm bảo number
+                    const value = matrix[y][x] || 0;
                     heatData.push({ x, y, v: value });
                     if (value > maxValue) maxValue = value;
                 }
             }
+            console.log('Max value in matrix:', maxValue);
 
             // Vẽ heatmap
             renderHeatChart(heatData, maxValue);
@@ -299,12 +328,12 @@
                         width: ({chart}) => (chart.chartArea || {}).width / 24,
                         height: ({chart}) => (chart.chartArea || {}).height / 7,
                         backgroundColor: context => {
-                            const val = context.parsed.v || 0; // Đảm bảo val là number
+                            const val = context.parsed.v || 0;
                             if (val === 0) {
-                                return 'rgba(0, 0, 0, 0)'; // Transparent cho 0
+                                return 'rgba(0, 0, 0, 0)';
                             }
-                            const alpha = Math.min(1, val / Math.max(maxValue, 1)); // Tránh chia 0
-                            return `rgba(54, 162, 235, ${alpha})`; // Xanh dương, alpha theo mật độ
+                            const alpha = Math.min(1, val / Math.max(maxValue, 1));
+                            return `rgba(54, 162, 235, ${alpha})`;
                         },
                         borderColor: 'rgba(0, 0, 0, 0.1)',
                         borderWidth: 0.5
@@ -318,7 +347,9 @@
                             callbacks: {
                                 title: context => {
                                     const parsed = context[0].parsed;
-                                    return `${weekdays[parsed.y || 0]} - ${(parsed.x || 0)}:00 UTC`;
+                                    const y = parsed.y || 0;
+                                    const x = parsed.x || 0;
+                                    return `${weekdays[y]} - ${x}:00 UTC`;
                                 },
                                 label: context => {
                                     const val = context.parsed.v || 0;
@@ -334,8 +365,13 @@
                             min: 0,
                             max: 23,
                             ticks: {
-                                stepSize: 2, // Mỗi 2 giờ để dễ đọc
-                                callback: value => value === 0 ? '12am' : value < 12 ? `${value}am` : value === 12 ? '12pm' : `${value-12}pm`
+                                stepSize: 2,
+                                callback: value => {
+                                    if (value === 0) return '12am';
+                                    if (value < 12) return `${value}am`;
+                                    if (value === 12) return '12pm';
+                                    return `${value - 12}pm`;
+                                }
                             },
                             title: { display: true, text: 'Giờ (UTC)' }
                         },
@@ -347,7 +383,7 @@
                                 callback: value => weekdays[value || 0]
                             },
                             title: { display: true, text: 'Ngày Trong Tuần' },
-                            reverse: false // Sun ở trên, Sat ở dưới
+                            reverse: true  // Reverse để Sun ở dưới, Sat ở trên? Wait, default is y=0 bottom Sun, y=6 top Sat. To match X style (Sun bottom? ), but screenshot has Sun bottom.
                         }
                     }
                 }
