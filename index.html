@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elon Musk X Tracker</title>
+    <title>POLYMARKET BY TILA</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,6 +36,8 @@
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-body);
+            background-image: radial-gradient(circle at 10% 20%, rgba(55, 175, 140, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 20%);
             color: var(--text-main);
             line-height: 1.6;
             padding: 40px 20px;
@@ -52,16 +54,24 @@
         }
 
         h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 10px;
-            letter-spacing: -0.02em;
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-main) 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: -0.03em;
+            text-transform: uppercase;
         }
 
         p.subtitle {
             color: var(--text-secondary);
             font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            opacity: 0.8;
         }
 
         .card {
@@ -72,6 +82,20 @@
             margin-bottom: 30px;
             border: 1px solid rgba(0, 0, 0, 0.02);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* Fix chiều cao Heatmap */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        /* New chart container style */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
         }
 
         .card:hover {
@@ -122,26 +146,45 @@
         }
 
         button {
-            padding: 10px 24px;
-            background-color: var(--primary);
+            padding: 0 28px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-weight: 600;
             font-size: 0.95rem;
             cursor: pointer;
-            transition: all 0.2s;
-            height: 42px;
-            /* Match input height roughly */
+            transition: all 0.3s ease;
+            height: 48px;
+            /* Match updated input height */
+            box-shadow: 0 4px 12px rgba(55, 175, 140, 0.25);
         }
 
         button:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(55, 175, 140, 0.35);
         }
 
         button:active {
             transform: translateY(0);
+        }
+
+        input {
+            padding: 0 16px;
+            height: 48px;
+            font-size: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.2s;
+            background: #ffffff;
+            color: var(--text-main);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
         }
 
         /* Modern Stat Cards */
@@ -224,34 +267,41 @@
             display: none;
         }
 
-        /* Tabs */
+        /* Modern Pill Tabs */
         .tabs {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid #e2e8f0;
+            display: inline-flex;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 12px;
+            gap: 0;
+            margin-bottom: 32px;
+            border: none;
+            position: relative;
         }
 
         .tab-btn {
-            background: none;
+            background: transparent;
             border: none;
-            padding: 12px 20px;
-            font-size: 1rem;
+            padding: 10px 24px;
+            font-size: 0.95rem;
             font-weight: 600;
             color: var(--text-secondary);
             cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-            font-family: inherit;
+            border-radius: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
         }
 
         .tab-btn.active {
+            background: #ffffff;
             color: var(--primary);
-            border-bottom-color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .tab-btn:hover:not(.active) {
             color: var(--text-main);
+            background: rgba(255, 255, 255, 0.5);
         }
 
         .tab-content {
@@ -285,6 +335,7 @@
             stroke-linecap: round;
             stroke-linejoin: round;
         }
+
         input {
             padding: 15px;
             font-size: 1rem;
@@ -949,23 +1000,22 @@
                         width: ({ chart }) => {
                             const area = chart.chartArea;
                             if (!area) return 0;
-                            return area.width / 24 - 3; // Wider gap for cleaner look
+                            // Chia đều cho 24 giờ, trừ khoảng trống
+                            return (area.width / 24) - 2;
                         },
                         height: ({ chart }) => {
                             const area = chart.chartArea;
                             if (!area) return 0;
-                            return area.height / 7 - 3;
+                            return (area.height / 7) - 2;
                         },
                         backgroundColor: context => {
                             const val = context.raw.v || 0;
                             if (val === 0) return '#f1f5f9';
-
-                            // More vibrant opacity scaling
                             const intensity = val / Math.max(maxValue, 1);
                             const alpha = 0.2 + (intensity * 0.8);
                             return `rgba(55, 175, 140, ${alpha})`;
                         },
-                        borderRadius: 4, // Rounded corners for cells
+                        borderRadius: 4,
                         borderWidth: 0,
                         hoverBackgroundColor: '#2a8f72'
                     }]
@@ -985,9 +1035,9 @@
                             callbacks: {
                                 title: context => {
                                     const parsed = context[0].parsed;
-                                    return `${weekdays[parsed.y]} @ ${parsed.x}:00 UTC`;
+                                    return `${weekdays[parsed.y]} @ ${parsed.x}h UTC`;
                                 },
-                                label: context => `${context.raw.v || 0} posts`
+                                label: context => `${context.raw.v || 0} bài đăng`
                             }
                         }
                     },
@@ -995,26 +1045,33 @@
                         x: {
                             type: 'linear',
                             position: 'bottom',
-                            min: -0.5,
-                            max: 23.5,
-                            grid: { display: false },
+                            min: 0,
+                            max: 24,
                             ticks: {
-                                stepSize: 3, // Less cluttered X axis
-                                callback: v => v === 0 ? '12am' : v === 12 ? '12pm' : v < 12 ? v + 'am' : (v - 12) + 'pm',
+                                stepSize: 2,
+                                callback: function (value) {
+                                    if (value === 24) return '24h';
+                                    return value + 'h';
+                                },
                                 font: { size: 11 }
                             },
-                            title: { display: true, text: 'Time (UTC)', padding: 10, color: '#94a3b8', font: { size: 11, weight: 500 } }
+                            grid: { display: false }
                         },
                         y: {
                             type: 'linear',
-                            min: -0.5,
-                            max: 6.5,
-                            grid: { display: false },
+                            min: 0,
+                            max: 7,
+                            offset: true,
+                            position: 'left',
                             ticks: {
-                                callback: v => weekdays[v] || '',
-                                font: { size: 11, weight: '500' },
-                                padding: 8
+                                stepSize: 1,
+                                callback: function (value) {
+                                    if (value >= 0 && value < 7) return weekdays[value];
+                                    return '';
+                                },
+                                font: { size: 12, weight: '500' }
                             },
+                            grid: { display: false },
                             reverse: true
                         }
                     }
