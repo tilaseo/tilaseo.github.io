@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Theo Dõi Posts Elon Musk</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3.0.1"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -65,7 +66,15 @@
             font-size: 0.9em;
             color: #6c757d;
         }
-        #chartContainer {
+        .chart-section {
+            margin-bottom: 40px;
+        }
+        .chart-title {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        #lineChartContainer, #heatChartContainer {
             position: relative;
             height: 400px;
         }
@@ -88,7 +97,7 @@
         <h1>Dashboard Theo Dõi Posts Elon Musk</h1>
         
         <div class="note">
-            <strong>Lưu ý:</strong> Sử dụng proxy CORS miễn phí (codetabs.com) để tránh lỗi CORS. Nếu gặp 403, thử refresh hoặc thay proxy (ví dụ: allorigins.win). API có thể có rate limit.
+            <strong>Lưu ý:</strong> Sử dụng proxy CORS miễn phí (codetabs.com) để tránh lỗi CORS. Nếu gặp 403, thử refresh hoặc thay proxy (ví dụ: allorigins.win). API có thể có rate limit. Heatmap hiển thị mật độ theo giờ (UTC) và ngày trong tuần (Sun ở trên, Mon-Sat theo chiều kim đồng hồ).
         </div>
         
         <div class="controls">
@@ -114,13 +123,25 @@
             </div>
         </div>
         
-        <div id="chartContainer">
-            <canvas id="postsChart"></canvas>
+        <div class="chart-section">
+            <div class="chart-title">Số Lượng Posts Hàng Ngày</div>
+            <div id="lineChartContainer">
+                <canvas id="postsChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-section">
+            <div class="chart-title">Mật Độ Đăng Bài Theo Thời Gian (Heatmap - Giờ UTC & Ngày Trong Tuần)</div>
+            <div id="heatChartContainer">
+                <canvas id="heatChart"></canvas>
+            </div>
         </div>
     </div>
 
     <script>
-        let chart = null;
+        let lineChart = null;
+        let heatChart = null;
+        const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         async function loadData() {
             const startDate = document.getElementById('startDate').value;
@@ -165,7 +186,7 @@
         }
 
         function processData(posts, startStr, endStr) {
-            // Group posts by day (YYYY-MM-DD)
+            // Group posts by day (YYYY-MM-DD) cho line chart
             const dailyCounts = {};
             posts.forEach(post => {
                 const date = new Date(post.createdAt);
@@ -196,18 +217,41 @@
             document.getElementById('avgPosts').textContent = avgPosts;
             document.getElementById('stats').style.display = 'flex';
 
-            // Vẽ biểu đồ
-            renderChart(days, counts);
+            // Vẽ line chart
+            renderLineChart(days, counts);
+
+            // Xử lý heatmap: ma trận 7x24 (weekday x hour)
+            const matrix = Array.from({length: 7}, () => Array(24).fill(0));
+            posts.forEach(post => {
+                const date = new Date(post.createdAt);
+                const hour = date.getUTCHours(); // 0-23 UTC
+                const weekday = date.getUTCDay(); // 0=Sun, 6=Sat
+                matrix[weekday][hour]++;
+            });
+
+            // Chuyển ma trận thành data cho matrix chart
+            const heatData = [];
+            let maxValue = 0;
+            for (let y = 0; y < 7; y++) {
+                for (let x = 0; x < 24; x++) {
+                    const value = matrix[y][x];
+                    heatData.push({ x, y, v: value });
+                    if (value > maxValue) maxValue = value;
+                }
+            }
+
+            // Vẽ heatmap
+            renderHeatChart(heatData, maxValue);
         }
 
-        function renderChart(labels, data) {
+        function renderLineChart(labels, data) {
             const ctx = document.getElementById('postsChart').getContext('2d');
             
-            if (chart) {
-                chart.destroy();
+            if (lineChart) {
+                lineChart.destroy();
             }
             
-            chart = new Chart(ctx, {
+            lineChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -224,6 +268,70 @@
                     scales: {
                         y: {
                             beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderHeatChart(data, maxValue) {
+            const ctx = document.getElementById('heatChart').getContext('2d');
+            
+            if (heatChart) {
+                heatChart.destroy();
+            }
+            
+            heatChart = new Chart(ctx, {
+                type: 'matrix',
+                data: {
+                    datasets: [{
+                        label: 'Mật Độ Posts',
+                        data: data,
+                        width: ({chart}) => (chart.chartArea || {}).width / 24,
+                        height: ({chart}) => (chart.chartArea || {}).height / 7,
+                        backgroundColor: context => {
+                            if (context.parsed.v === 0) {
+                                return 'rgba(0, 0, 0, 0)'; // Transparent cho 0
+                            }
+                            const alpha = context.parsed.v / (maxValue || 1);
+                            return `rgba(54, 162, 235, ${alpha})`; // Xanh dương, alpha theo mật độ
+                        },
+                        borderColor: 'rgba(0, 0, 0, 0.1)',
+                        borderWidth: 0.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: context => `${weekdays[context[0].parsed.y]} - ${context[0].parsed.x}:00 UTC`,
+                                label: context => `${context.parsed.v} posts`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            min: 0,
+                            max: 23,
+                            ticks: {
+                                stepSize: 2, // Mỗi 2 giờ để dễ đọc
+                                callback: value => value === 0 ? '12am' : value < 12 ? `${value}am` : value === 12 ? '12pm' : `${value-12}pm`
+                            },
+                            title: { display: true, text: 'Giờ (UTC)' }
+                        },
+                        y: {
+                            type: 'linear',
+                            min: 0,
+                            max: 6,
+                            ticks: {
+                                callback: value => weekdays[value]
+                            },
+                            title: { display: true, text: 'Ngày Trong Tuần' },
+                            reverse: false // Sun ở trên, Sat ở dưới
                         }
                     }
                 }
