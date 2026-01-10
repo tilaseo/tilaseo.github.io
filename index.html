@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" sizes="32x32" href="https://polymarket.com/icons/favicon-32x32.png">
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
@@ -864,6 +864,28 @@
             if (data.length > 0) processData(data, startDate, endDate);
         }
 
+        function calculateStats(data) {
+            const n = data.length;
+            if (n === 0) return { mean: 0, stdDev: 0 };
+            const mean = data.reduce((a, b) => a + b, 0) / n;
+            const variance = data.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / n;
+            return { mean, stdDev: Math.sqrt(variance) };
+        }
+
+        function calculateMA7(data) {
+            const ma7 = [];
+            for (let i = 0; i < data.length; i++) {
+                if (i < 6) {
+                    ma7.push(null);
+                } else {
+                    let sum = 0;
+                    for (let j = 0; j < 7; j++) sum += data[i - j];
+                    ma7.push(sum / 7);
+                }
+            }
+            return ma7;
+        }
+
         function processData(posts, startStr, endStr) {
             // Process Line Chart Data
             const dailyCounts = {};
@@ -887,15 +909,27 @@
                 current.setDate(current.getDate() + 1);
             }
 
+            // --- ADVANCED ANALYTICS ---
+            const { mean, stdDev } = calculateStats(counts);
+            const threshold = mean + (1.5 * stdDev); // 1.5 Sigma spike detection
+
+            // MA7 Trend
+            const ma7Data = calculateMA7(counts);
+
+            // Point Styling
+            const pointColors = counts.map(val => val > threshold ? '#ef4444' : '#ffffff');
+            const pointRadii = counts.map(val => val > threshold ? 5 : 3);
+            const pointBorders = counts.map(val => val > threshold ? '#ef4444' : primaryColor);
+
             // Stats
             const totalPosts = posts.length;
             const numDays = days.length;
             const avgPosts = numDays > 0 ? (totalPosts / numDays).toFixed(1) : 0;
 
             document.getElementById('totalPosts').textContent = totalPosts.toLocaleString();
-            document.getElementById('avgPosts').textContent = avgPosts;
+            document.getElementById('avgPosts').innerHTML = `${avgPosts} <span style="font-size:0.6em; color:#94a3b8; font-weight:400">/day</span>`;
 
-            renderLineChart(days, counts);
+            renderLineChart(days, counts, ma7Data, pointColors, pointRadii, pointBorders);
 
             // Process Heatmap Data
             const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
@@ -927,7 +961,7 @@
             renderHeatChart(heatData, maxValue);
         }
 
-        function renderLineChart(labels, data) {
+        function renderLineChart(labels, data, ma7Data, pointColors, pointRadii, pointBorders) {
             const ctx = document.getElementById('postsChart').getContext('2d');
             if (lineChart) lineChart.destroy();
 
@@ -940,25 +974,51 @@
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'Posts',
-                        data: data,
-                        borderColor: primaryColor,
-                        backgroundColor: gradient,
-                        borderWidth: 2,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: primaryColor,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        fill: true,
-                        tension: 0.3
-                    }]
+                    datasets: [
+                        {
+                            label: '7-Day Trend',
+                            data: ma7Data,
+                            borderColor: '#fbbf24', // Amber
+                            borderWidth: 2,
+                            borderDash: [6, 4],
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.4,
+                            order: 1
+                        },
+                        {
+                            label: 'Daily Posts',
+                            data: data,
+                            borderColor: primaryColor,
+                            backgroundColor: gradient,
+                            borderWidth: 2,
+                            pointBackgroundColor: pointColors,
+                            pointBorderColor: pointBorders,
+                            pointRadius: pointRadii,
+                            pointHoverRadius: 7,
+                            fill: true,
+                            tension: 0.3,
+                            order: 2
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
                     plugins: {
-                        legend: { display: false },
+                        legend: {
+                            display: true,
+                            align: 'end',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                font: { family: 'Outfit', size: 12 }
+                            }
+                        },
                         tooltip: {
                             backgroundColor: '#fff',
                             titleColor: '#1e293b',
@@ -966,9 +1026,28 @@
                             borderColor: '#e2e8f0',
                             borderWidth: 1,
                             padding: 12,
-                            displayColors: false,
+                            boxPadding: 6,
+                            usePointStyle: true,
                             titleFont: { family: 'Outfit', size: 13, weight: '600' },
-                            bodyFont: { family: 'Outfit', size: 13 }
+                            bodyFont: { family: 'Outfit', size: 13 },
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += Number(context.parsed.y).toFixed(1);
+                                    }
+                                    return label;
+                                },
+                                afterBody: function (context) {
+                                    const dailyDS = context.find(c => c.dataset.label === 'Daily Posts');
+                                    if (dailyDS && pointColors[dailyDS.dataIndex] === '#ef4444') {
+                                        return '\n🔥 High Activity Spike!';
+                                    }
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -980,7 +1059,7 @@
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { font: { size: 11 } }
+                            ticks: { font: { size: 11 }, maxRotation: 0 }
                         }
                     }
                 }
@@ -1000,7 +1079,6 @@
                         width: ({ chart }) => {
                             const area = chart.chartArea;
                             if (!area) return 0;
-                            // Chia đều cho 24 giờ, trừ khoảng trống
                             return (area.width / 24) - 2;
                         },
                         height: ({ chart }) => {
@@ -1010,14 +1088,18 @@
                         },
                         backgroundColor: context => {
                             const val = context.raw.v || 0;
-                            if (val === 0) return '#f1f5f9';
+                            if (val === 0) return '#f8fafc';
+
                             const intensity = val / Math.max(maxValue, 1);
-                            const alpha = 0.2 + (intensity * 0.8);
-                            return `rgba(55, 175, 140, ${alpha})`;
+                            // Enhanced Green Ramp
+                            if (intensity < 0.25) return '#dcfce7';
+                            if (intensity < 0.50) return '#86efac';
+                            if (intensity < 0.75) return '#4ade80';
+                            return '#16a34a';
                         },
                         borderRadius: 4,
                         borderWidth: 0,
-                        hoverBackgroundColor: '#2a8f72'
+                        hoverBackgroundColor: '#fbbf24'
                     }]
                 },
                 options: {
@@ -1032,12 +1114,13 @@
                             borderColor: '#e2e8f0',
                             borderWidth: 1,
                             padding: 12,
+                            titleFont: { family: 'Outfit', size: 13, weight: '600' },
                             callbacks: {
                                 title: context => {
                                     const parsed = context[0].parsed;
                                     return `${weekdays[parsed.y]} @ ${parsed.x}h UTC`;
                                 },
-                                label: context => `${context.raw.v || 0} bài đăng`
+                                label: context => `${context.raw.v || 0} posts`
                             }
                         }
                     },
@@ -1049,11 +1132,9 @@
                             max: 24,
                             ticks: {
                                 stepSize: 2,
-                                callback: function (value) {
-                                    if (value === 24) return '24h';
-                                    return value + 'h';
-                                },
-                                font: { size: 11 }
+                                callback: val => val === 24 ? '24h' : val + 'h',
+                                font: { size: 11 },
+                                color: '#94a3b8'
                             },
                             grid: { display: false }
                         },
@@ -1065,11 +1146,9 @@
                             position: 'left',
                             ticks: {
                                 stepSize: 1,
-                                callback: function (value) {
-                                    if (value >= 0 && value < 7) return weekdays[value];
-                                    return '';
-                                },
-                                font: { size: 12, weight: '500' }
+                                callback: val => (val >= 0 && val < 7) ? weekdays[val] : '',
+                                font: { size: 12, weight: '500' },
+                                color: '#64748b'
                             },
                             grid: { display: false },
                             reverse: true
