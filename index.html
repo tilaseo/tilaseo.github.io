@@ -499,7 +499,7 @@
                 </div>
                 <div class="stat-card-modern">
                     <div class="stat-content">
-                        <div class="stat-label-modern">Active Hours</div>
+                        <div class="stat-label-modern">Max Daily Volume</div>
                         <div class="stat-value-modern" id="heatPosts">0</div>
                     </div>
                 </div>
@@ -924,16 +924,23 @@
             // Stats
             const totalPosts = posts.length;
             const numDays = days.length;
-            const avgPosts = numDays > 0 ? (totalPosts / numDays).toFixed(1) : 0;
+            const avgPostsRaw = numDays > 0 ? (totalPosts / numDays) : 0;
+            const avgPosts = avgPostsRaw.toFixed(1);
+
+            // Average Line Data
+            const avgData = Array(numDays).fill(avgPostsRaw);
 
             document.getElementById('totalPosts').textContent = totalPosts.toLocaleString();
             document.getElementById('avgPosts').innerHTML = `${avgPosts} <span style="font-size:0.6em; color:#94a3b8; font-weight:400">/day</span>`;
 
-            renderLineChart(days, counts, ma7Data, pointColors, pointRadii, pointBorders);
+            renderLineChart(days, counts, ma7Data, avgData, pointColors, pointRadii, pointBorders);
 
-            // Process Heatmap Data
+            // Process Heatmap Data & Max Volume
             const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
-            let validHeatPosts = 0;
+
+            // Calculate Max Daily Volume (Replacement for Active Hours)
+            const maxDailyPosts = Math.max(...counts, 0);
+            document.getElementById('heatPosts').textContent = maxDailyPosts.toLocaleString();
 
             posts.forEach(post => {
                 const date = new Date(post.createdAt);
@@ -942,11 +949,8 @@
                 const weekday = date.getUTCDay();
                 if (hour >= 0 && hour < 24 && weekday >= 0 && weekday < 7) {
                     matrix[weekday][hour]++;
-                    validHeatPosts++;
                 }
             });
-
-            document.getElementById('heatPosts').textContent = validHeatPosts.toLocaleString();
 
             const heatData = [];
             let maxValue = 0;
@@ -961,7 +965,7 @@
             renderHeatChart(heatData, maxValue);
         }
 
-        function renderLineChart(labels, data, ma7Data, pointColors, pointRadii, pointBorders) {
+        function renderLineChart(labels, data, ma7Data, avgData, pointColors, pointRadii, pointBorders) {
             const ctx = document.getElementById('postsChart').getContext('2d');
             if (lineChart) lineChart.destroy();
 
@@ -975,6 +979,17 @@
                 data: {
                     labels: labels,
                     datasets: [
+                        {
+                            label: 'Average',
+                            data: avgData,
+                            borderColor: '#94a3b8', // Slate-400
+                            borderWidth: 1.5,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0,
+                            order: 0
+                        },
                         {
                             label: '7-Day Trend',
                             data: ma7Data,
