@@ -516,7 +516,7 @@
 
             <div class="card">
                 <div class="chart-header">
-                    <div class="chart-title">Activity Heatmap (UTC)</div>
+                    <div class="chart-title">Activity Heatmap (Vietnam Time)</div>
                 </div>
                 <div class="chart-container">
                     <canvas id="heatChart"></canvas>
@@ -887,11 +887,16 @@
         }
 
         function processData(posts, startStr, endStr) {
+            // CONSTANT: Vietnam Time Offset (UTC+7) in milliseconds
+            const VN_OFFSET = 7 * 60 * 60 * 1000;
+
             // Process Line Chart Data
             const dailyCounts = {};
             posts.forEach(post => {
                 const date = new Date(post.createdAt);
                 if (isNaN(date)) return;
+
+                // Use original UTC date for Line Chart
                 const dayKey = date.toISOString().split('T')[0];
                 dailyCounts[dayKey] = (dailyCounts[dayKey] || 0) + 1;
             });
@@ -945,8 +950,12 @@
             posts.forEach(post => {
                 const date = new Date(post.createdAt);
                 if (isNaN(date.getTime())) return;
-                const hour = date.getUTCHours();
-                const weekday = date.getUTCDay();
+
+                // Shift to VN Time
+                const vnDate = new Date(date.getTime() + VN_OFFSET);
+                const hour = vnDate.getUTCHours();
+                const weekday = vnDate.getUTCDay(); // 0 is Sunday
+
                 if (hour >= 0 && hour < 24 && weekday >= 0 && weekday < 7) {
                     matrix[weekday][hour]++;
                 }
@@ -1133,7 +1142,7 @@
                             callbacks: {
                                 title: context => {
                                     const parsed = context[0].parsed;
-                                    return `${weekdays[parsed.y]} @ ${parsed.x}h UTC`;
+                                    return `${weekdays[parsed.y]} @ ${parsed.x}h VN`;
                                 },
                                 label: context => `${context.raw.v || 0} posts`
                             }
