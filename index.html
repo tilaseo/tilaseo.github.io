@@ -1263,8 +1263,8 @@
             showLoading(true);
             try {
                 const [res2024, res2025] = await Promise.all([
-                    fetch('data/2024.csv').then(r => r.text()),
-                    fetch('data/2025.csv').then(r => r.text())
+                    fetch('/2024.csv').then(r => r.text()),
+                    fetch('/2025.csv').then(r => r.text())
                 ]);
 
                 const parseCSV = (csvText) => {
