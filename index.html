@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POLYMARKET BY TILA</title>
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -84,14 +83,12 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        /* Fix chiều cao Heatmap */
         .chart-container {
             position: relative;
             height: 350px;
             width: 100%;
         }
 
-        /* New chart container style */
         .chart-container {
             position: relative;
             height: 350px;
@@ -156,7 +153,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             height: 48px;
-            /* Match updated input height */
             box-shadow: 0 4px 12px rgba(55, 175, 140, 0.25);
         }
 
@@ -187,7 +183,6 @@
             box-shadow: 0 0 0 4px var(--primary-light);
         }
 
-        /* Modern Stat Cards */
         .stats-grid-modern {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -244,7 +239,6 @@
             line-height: 1.2;
         }
 
-        /* Accordion Table */
         .group-header {
             cursor: pointer;
             transition: background 0.15s;
@@ -267,7 +261,6 @@
             display: none;
         }
 
-        /* Modern Pill Tabs */
         .tabs {
             display: inline-flex;
             background: #e2e8f0;
@@ -325,7 +318,6 @@
             }
         }
 
-        /* SVG Icons Utility */
         .icon-svg {
             width: 24px;
             height: 24px;
@@ -344,6 +336,38 @@
             outline: none;
             transition: border-color 0.2s;
         }
+
+        .filter-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .filter-btn.active {
+            background: #37af8c;
+            color: white;
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+            letter-spacing: -0.02em;
+            text-align: center;
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 
@@ -360,13 +384,12 @@
 
         <div id="error" class="error"></div>
 
-        <!-- Tab Navigation -->
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('account')">Account Overview</button>
             <button class="tab-btn" onclick="switchTab('elon')">Elon Musk Tracker</button>
+            <button class="tab-btn" onclick="switchTab('tsa')">TSA Data</button>
         </div>
 
-        <!-- Tab 1: Account -->
         <div id="tab-account" class="tab-content active">
             <div class="controls">
                 <div class="input-group wide" style="flex:2; min-width: 300px;">
@@ -466,8 +489,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Tab 2: Elon -->
         <div id="tab-elon" class="tab-content">
             <div class="controls">
                 <div class="input-group">
@@ -523,32 +544,97 @@
                 </div>
             </div>
         </div>
+        <div id="tab-tsa" class="tab-content">
+            <div class="card">
+                <div class="chart-header">
+                    <div class="chart-title">TSA Passenger Throughput (7-Day Moving Avg)</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="tsaChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="chart-header">
+                    <div style="flex:1;">
+                        <div class="chart-title">Passenger Volume by Period</div>
+                    </div>
+                    <div class="chart-controls" style="display:flex; gap:8px;">
+                        <button class="filter-btn active" onclick="filterTsaChart('ALL')">All</button>
+                        <button class="filter-btn" onclick="filterTsaChart('Q1')">Q1</button>
+                        <button class="filter-btn" onclick="filterTsaChart('Q2')">Q2</button>
+                        <button class="filter-btn" onclick="filterTsaChart('Q3')">Q3</button>
+                        <button class="filter-btn" onclick="filterTsaChart('Q4')">Q4</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="tsaFilterChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="chart-header">
+                    <div class="chart-title">Weekly Passenger Volume</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="tsaWeeklyChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         let lineChart = null;
         let heatChart = null;
+        let tsaChart = null;
+        let tsaFilterChart = null;
+        let tsaWeeklyChart = null;
+        let tsaLabels = [];
+        let tsaSma2024 = [];
+        let tsaSma2025 = [];
+
         const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const primaryColor = '#37af8c';
 
-        // Polymarket / Polygon Config
         const POLYGON_RPC = 'https://polygon-rpc.com';
         const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
         const USDC_ABI = ['function balanceOf(address) view returns (uint256)'];
         const DATA_API_BASE = 'https://data-api.polymarket.com';
 
-        // Chart Global Defaults
         Chart.defaults.font.family = "'Outfit', sans-serif";
         Chart.defaults.color = '#64748b';
         Chart.defaults.scale.grid.color = 'rgba(0,0,0,0.04)';
-
-        // Register Matrix controller
         if (typeof Chart !== 'undefined' && Chart.register) {
             const ChartMatrix = window['chartjs-chart-matrix'] || window.ChartMatrix;
             if (ChartMatrix) {
                 const { MatrixController, MatrixElement } = ChartMatrix;
                 Chart.register(MatrixController, MatrixElement);
             }
+        }
+
+        function filterTsaChart(range) {
+            if (!tsaFilterChart) return;
+
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                const text = b.innerText;
+                const match = (range === 'ALL' && text === 'All') || (range === text);
+                b.classList.toggle('active', match);
+            });
+
+            let startIndex = 0;
+            let endIndex = 366;
+
+            if (range === 'Q1') { startIndex = 0; endIndex = 90; }
+            else if (range === 'Q2') { startIndex = 90; endIndex = 181; }
+            else if (range === 'Q3') { startIndex = 181; endIndex = 273; }
+            else if (range === 'Q4') { startIndex = 273; endIndex = 366; }
+
+            const sliceLabels = tsaLabels.slice(startIndex, endIndex);
+            const sliceSma2024 = tsaSma2024.slice(startIndex, endIndex);
+            const sliceSma2025 = tsaSma2025.slice(startIndex, endIndex);
+
+            tsaFilterChart.data.labels = sliceLabels;
+            tsaFilterChart.data.datasets[0].data = sliceSma2024;
+            tsaFilterChart.data.datasets[1].data = sliceSma2025;
+            tsaFilterChart.update();
         }
 
         function showLoading(show) {
@@ -568,6 +654,10 @@
 
             const content = document.getElementById(`tab-${tab}`);
             if (content) content.classList.add('active');
+
+            if (tab === 'tsa') {
+                loadTsaData();
+            }
         }
 
         async function loadAccountData() {
@@ -575,7 +665,6 @@
             showError('');
             try {
                 const address = document.getElementById('address').value.trim();
-                // Validate address if needed
                 if (!address) throw new Error("Please enter a wallet address");
 
                 await Promise.all([
@@ -622,7 +711,6 @@
             }
         }
 
-        // Toggle Group Function
         function toggleGroup(header) {
             header.classList.toggle('group-collapsed');
             const row = header.nextElementSibling;
@@ -638,10 +726,8 @@
                 const res = await fetch(proxyUrl);
                 const data = await res.json();
 
-                // API returns array of users. Match by proxyWallet.
                 const userStats = data.find(u => (u.proxyWallet || '').toLowerCase() === address.toLowerCase()) || data[0];
 
-                // Check for 'pnl' field as per user API sample
                 if (userStats && userStats.pnl !== undefined) {
                     const profit = parseFloat(userStats.pnl);
                     const isPositive = profit >= 0;
@@ -663,7 +749,6 @@
         async function fetchPositions(address) {
             try {
                 const url = `${DATA_API_BASE}/positions?user=${address}`;
-                // Fallback to proxy if fails? Try direct first. Polymarket Data API usually CORS open? use proxy to be safe.
                 const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
 
                 const res = await fetch(proxyUrl);
@@ -677,15 +762,12 @@
                     return;
                 }
 
-                // Group by Event Slug
                 const groups = {};
                 data.forEach(pos => {
                     const key = pos.eventSlug || pos.slug;
                     if (!groups[key]) {
-                        // smart formatting for event title from slug if generic
                         let displayTitle = pos.eventSlug || pos.title;
 
-                        // Heuristic: specific styling for EPL/Sports
                         if (pos.eventSlug && pos.eventSlug.includes('-')) {
                             const parts = pos.eventSlug.split('-');
                             if (parts.length > 3) {
@@ -714,7 +796,6 @@
                 Object.values(groups).forEach((group, index) => {
                     const uniqueId = `group-${index}`;
 
-                    // Render Group Header
                     const groupRow = `
                         <tr class="group-header" onclick="toggleGroup(this)">
                             <td colspan="5" style="padding: 16px; font-weight: 600; color: #334155; border-bottom: 1px solid #e2e8f0; background:#f8fafc;">
@@ -744,7 +825,6 @@
                         const pnlColor = pnlPercent >= 0 ? '#10b981' : '#ef4444';
                         const pnlSign = pnlPercent >= 0 ? '+' : '';
 
-                        // Formatted Size (Payout) in Dollars
                         const payoutSize = formatCurrency(size).replace('$', '');
 
                         let label = pos.title.replace(/^Will /, '').replace(/\?$/, '');
@@ -789,7 +869,6 @@
 
         async function fetchTrades(address) {
             try {
-                // Fetch Activity, limit 50 to get enough REDEEMs
                 const url = `${DATA_API_BASE}/activity?user=${address}&limit=50`;
                 const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
                 const res = await fetch(proxyUrl);
@@ -803,7 +882,6 @@
                     return;
                 }
 
-                // Filter for REDEEM only
                 const closedTrades = data.filter(t => t.type === 'REDEEM');
 
                 if (closedTrades.length === 0) {
@@ -816,8 +894,7 @@
                 closedTrades.forEach(trade => {
                     const time = new Date(trade.timestamp * 1000).toLocaleDateString();
 
-                    // Logic: size > 0 => Payment Received (WIN). size == 0 => Expired (LOSS).
-                    const size = parseFloat(trade.size || 0); // Payout amount
+                    const size = parseFloat(trade.size || 0); 
                     const isWin = size > 0;
 
                     const outcomeBadge = isWin
@@ -887,7 +964,6 @@
         }
 
         function processData(posts, startStr, endStr) {
-            // CONSTANT: Vietnam Time Offset (UTC+7) in milliseconds
             const VN_OFFSET = 7 * 60 * 60 * 1000;
 
             // Process Line Chart Data
@@ -896,7 +972,6 @@
                 const date = new Date(post.createdAt);
                 if (isNaN(date)) return;
 
-                // Use original UTC date for Line Chart
                 const dayKey = date.toISOString().split('T')[0];
                 dailyCounts[dayKey] = (dailyCounts[dayKey] || 0) + 1;
             });
@@ -1180,6 +1255,245 @@
                     }
                 }
             });
+        }
+
+        async function loadTsaData() {
+            if (tsaChart) return;
+
+            showLoading(true);
+            try {
+                const [res2024, res2025] = await Promise.all([
+                    fetch('data/2024.csv').then(r => r.text()),
+                    fetch('data/2025.csv').then(r => r.text())
+                ]);
+
+                const parseCSV = (csvText) => {
+                    const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
+                    const data = [];
+                    lines.forEach(line => {
+                        const match = line.match(/^(\d{1,2}\/\d{1,2}\/\d{4}),"([\d,]+)"/);
+                        if (match) {
+                            const dateStr = match[1];
+                            const valueStr = match[2].replace(/,/g, '');
+                            data.push({
+                                date: dateStr,
+                                value: parseInt(valueStr, 10),
+                                objDate: new Date(dateStr)
+                            });
+                        }
+                    });
+                    return data;
+                };
+
+                const raw2024 = parseCSV(res2024);
+                const raw2025 = parseCSV(res2025);
+
+                const calculateSMA = (data, windowSize) => {
+                    let results = [];
+                    for (let i = 0; i < data.length; i++) {
+                        if (i < windowSize - 1) {
+                            results.push(null);
+                            continue;
+                        }
+                        let sum = 0;
+                        for (let j = 0; j < windowSize; j++) {
+                            sum += data[i - j].value;
+                        }
+                        results.push(sum / windowSize);
+                    }
+                    return results;
+                };
+
+                tsaSma2024 = calculateSMA(raw2024, 7);
+                tsaSma2025 = calculateSMA(raw2025, 7);
+
+                // Populate Global Labels
+                tsaLabels = raw2024.map(d => {
+                    return d.objDate.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+                });
+
+                // Chart 1: Static Full View
+                const ctx = document.getElementById('tsaChart').getContext('2d');
+                tsaChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: tsaLabels,
+                        datasets: [
+                            {
+                                label: '2024',
+                                data: tsaSma2024,
+                                borderColor: '#94a3b8',
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                borderDash: [4, 4],
+                                tension: 0.4
+                            },
+                            {
+                                label: '2025',
+                                data: tsaSma2025,
+                                borderColor: '#37af8c',
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                tension: 0.4,
+                                fill: true,
+                                backgroundColor: 'rgba(55, 175, 140, 0.05)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 8, usePointStyle: true } },
+                            tooltip: { callbacks: { label: c => c.dataset.label + ': ' + (c.raw / 1000000).toFixed(2) + 'M' } }
+                        },
+                        scales: {
+                            y: { ticks: { callback: v => (v / 1000000).toFixed(1) + 'M', font: { size: 11, weight: '500' } }, grid: { display: true, color: 'rgba(0,0,0,0.03)' } },
+                            x: { grid: { display: false }, ticks: { maxTicksLimit: 12, maxRotation: 0, font: { size: 11, weight: '500' } } }
+                        }
+                    }
+                });
+
+                // Chart 2: Filterable View
+                const ctxFilter = document.getElementById('tsaFilterChart').getContext('2d');
+                tsaFilterChart = new Chart(ctxFilter, {
+                    type: 'line',
+                    data: {
+                        labels: [...tsaLabels], // Clone
+                        datasets: [
+                            {
+                                label: '2024',
+                                data: [...tsaSma2024],
+                                borderColor: '#64748b',
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                borderDash: [2, 2],
+                                tension: 0.4
+                            },
+                            {
+                                label: '2025',
+                                data: [...tsaSma2025],
+                                borderColor: '#37af8c',
+                                borderWidth: 3,
+                                pointRadius: 0,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 8, usePointStyle: true } },
+                            tooltip: { callbacks: { label: c => c.dataset.label + ': ' + (c.raw / 1000000).toFixed(2) + 'M' } }
+                        },
+                        scales: {
+                            y: { ticks: { callback: v => (v / 1000000).toFixed(1) + 'M', font: { size: 11, weight: '500' } }, grid: { display: true, color: 'rgba(0,0,0,0.03)' } },
+                            x: { grid: { display: false }, ticks: { maxTicksLimit: 12, maxRotation: 0, font: { size: 11, weight: '500' } } }
+                        }
+                    }
+                });
+
+                // --- Calculate Weekly ---
+                const getWeekNumber = (d) => {
+                    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+                    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+                    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+                    return weekNo;
+                };
+
+                const calculateWeekly = (data) => {
+                    const weeks = Array(54).fill(0);
+                    data.forEach(d => {
+                        const w = getWeekNumber(d.objDate);
+                        if (w >= 0 && w <= 53) weeks[w] += d.value;
+                    });
+                    return weeks;
+                };
+
+                const weekly2024 = calculateWeekly(raw2024);
+                const weekly2025 = calculateWeekly(raw2025);
+
+                const weekLabels = Array.from({ length: 53 }, (_, i) => `W${i}`);
+                const ctxWeekly = document.getElementById('tsaWeeklyChart').getContext('2d');
+                tsaWeeklyChart = new Chart(ctxWeekly, {
+                    type: 'bar',
+                    data: {
+                        labels: weekLabels.slice(1),
+                        datasets: [
+                            {
+                                label: '2024',
+                                data: weekly2024.slice(1),
+                                backgroundColor: '#cbd5e1',
+                                borderRadius: 3,
+                                barPercentage: 0.7,
+                                categoryPercentage: 0.8
+                            },
+                            {
+                                label: '2025',
+                                data: weekly2025.slice(1),
+                                backgroundColor: '#37af8c',
+                                borderRadius: 3,
+                                barPercentage: 0.7,
+                                categoryPercentage: 0.8
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: true, position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 6 } },
+                            tooltip: { callbacks: { label: c => c.dataset.label + ': ' + (c.raw / 1000000).toFixed(2) + 'M' } }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { callback: v => (v / 1000000).toFixed(0) + 'M', font: { size: 11 } } },
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    maxTicksLimit: 13,
+                                    font: { size: 11, weight: '600' },
+                                    callback: function (val, index) {
+                                        // Map week index 0-51 to Month
+                                        // val is index in labels array. labels are W1...W52
+                                        // 52 weeks / 12 months ~ 4.3 weeks per month
+                                        // Simple mapping:
+                                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                        const monthIndex = Math.floor(val / 4.3);
+                                        // Only show label if it's start of month roughly
+                                        // Let's just return Month name for every ~4th tick
+                                        // This callback replaces W1... with Month names
+                                        // Or we can just keep W1 but make it clearer.
+                                        // User asked to make timeline CLEARER.
+                                        // Let's use Month Names instead of Weeks.
+                                        if (monthIndex >= 0 && monthIndex < 12) {
+                                            // Check if this is the first week of the month
+                                            // val=0 (W1) -> Jan
+                                            // val=4 (W5) -> Feb
+                                            const approxWeek = Math.round(monthIndex * 4.3);
+                                            if (Math.abs(val - approxWeek) < 2) return months[monthIndex];
+                                        }
+                                        return '';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error loading TSA data:', error);
+                showError("Failed to load TSA data.");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function loadDashboard() {
+            // Placeholder if missing
         }
 
         function showError(message) {
