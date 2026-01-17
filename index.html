@@ -490,16 +490,53 @@
             </div>
         </div>
         <div id="tab-elon" class="tab-content">
-            <div class="controls">
-                <div class="input-group">
-                    <label for="startDate">From Date</label>
-                    <input type="date" id="startDate" value="2026-01-01">
+            <div class="controls" style="flex-direction:column; align-items:center; gap:16px;">
+                <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-end; justify-content:center;">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span
+                            style="font-size:0.8rem; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Period
+                            A</span>
+                        <div style="display:flex; gap:12px;">
+                            <div class="input-group">
+                                <label for="startDate">From</label>
+                                <input type="date" id="startDate" value="2026-01-01">
+                            </div>
+                            <div class="input-group">
+                                <label for="endDate">To</label>
+                                <input type="date" id="endDate" value="2026-01-05">
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="endDate">To Date</label>
-                    <input type="date" id="endDate" value="2026-01-05">
+
+                <div style="width:100%; max-width:600px; border-top:1px dashed #cbd5e1; margin:4px 0;"></div>
+
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="compareToggle" onchange="toggleCompare()"
+                        style="width:20px; height:20px;">
+                    <label for="compareToggle"
+                        style="margin:0; cursor:pointer; font-weight:600; color:var(--text-main);">Compare with another
+                        period</label>
                 </div>
-                <button onclick="loadElonData()">Load Activity</button>
+
+                <div id="compareInputs"
+                    style="display:none; flex-direction:column; gap:4px; animation: fadeIn 0.3s ease;">
+                    <span
+                        style="font-size:0.8rem; font-weight:700; color:#f59e0b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; text-align:center;">Period
+                        B</span>
+                    <div style="display:flex; gap:12px; justify-content:center;">
+                        <div class="input-group">
+                            <label for="startDate2">From</label>
+                            <input type="date" id="startDate2">
+                        </div>
+                        <div class="input-group">
+                            <label for="endDate2">To</label>
+                            <input type="date" id="endDate2">
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="loadElonData()" style="margin-top:8px; width:200px;">Load Activity</button>
             </div>
 
             <h2 class="section-title" style="margin-left: 5px; margin-bottom: 20px; font-weight:600; color:#334155;">
@@ -660,6 +697,11 @@
             }
         }
 
+        function toggleCompare() {
+            const isChecked = document.getElementById('compareToggle').checked;
+            document.getElementById('compareInputs').style.display = isChecked ? 'flex' : 'none';
+        }
+
         async function loadAccountData() {
             showLoading(true);
             showError('');
@@ -687,15 +729,39 @@
             try {
                 const startDate = document.getElementById('startDate').value;
                 const endDate = document.getElementById('endDate').value;
-                if (!startDate || !endDate) throw new Error("Please select dates");
+                if (!startDate || !endDate) throw new Error("Please select Period A dates");
 
-                await fetchElonData(startDate, endDate);
+                const isCompare = document.getElementById('compareToggle').checked;
+
+                const dataA = await fetchElonPosts(startDate, endDate);
+
+                if (isCompare) {
+                    const startB = document.getElementById('startDate2').value;
+                    const endB = document.getElementById('endDate2').value;
+                    if (!startB || !endB) throw new Error("Please select Period B dates");
+
+                    const dataB = await fetchElonPosts(startB, endB);
+                    processComparisonData(dataA, startDate, endDate, dataB, startB, endB);
+                } else {
+                    processData(dataA, startDate, endDate);
+                }
             } catch (error) {
                 console.error('Error:', error);
                 showError(`Error: ${error.message}`);
             } finally {
                 showLoading(false);
             }
+        }
+
+        async function fetchElonPosts(startDate, endDate) {
+            const startIso = `${startDate}T17:00:00.000Z`;
+            const endIso = `${endDate}T17:00:59.000Z`;
+            const url = `https://xtracker.polymarket.com/api/users/elonmusk/posts?startDate=${startIso}&endDate=${endIso}`;
+            const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+
+            const response = await fetch(proxyUrl);
+            const result = await response.json();
+            return result.data || result || [];
         }
 
         async function fetchBalance(address) {
@@ -894,7 +960,7 @@
                 closedTrades.forEach(trade => {
                     const time = new Date(trade.timestamp * 1000).toLocaleDateString();
 
-                    const size = parseFloat(trade.size || 0); 
+                    const size = parseFloat(trade.size || 0);
                     const isWin = size > 0;
 
                     const outcomeBadge = isWin
@@ -928,17 +994,135 @@
             }
         }
 
-        async function fetchElonData(startDate, endDate) {
-            const startIso = `${startDate}T17:00:00.000Z`;
-            const endIso = `${endDate}T17:00:59.000Z`;
-            const url = `https://xtracker.polymarket.com/api/users/elonmusk/posts?startDate=${startIso}&endDate=${endIso}`;
-            const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+        function processComparisonData(postsA, startA, endA, postsB, startB, endB) {
+            // Helper to get daily counts
+            const getDailyCounts = (posts, startStr, endStr) => {
+                const dailyCounts = {};
+                posts.forEach(post => {
+                    const date = new Date(post.createdAt);
+                    if (isNaN(date)) return;
+                    const dayKey = date.toISOString().split('T')[0];
+                    dailyCounts[dayKey] = (dailyCounts[dayKey] || 0) + 1;
+                });
 
-            const response = await fetch(proxyUrl);
-            const result = await response.json();
-            const data = result.data || result || [];
+                const start = new Date(startStr);
+                const end = new Date(endStr);
+                const counts = [];
+                let current = new Date(start);
 
-            if (data.length > 0) processData(data, startDate, endDate);
+                while (current <= end) {
+                    const dayKey = current.toISOString().split('T')[0];
+                    counts.push(dailyCounts[dayKey] || 0);
+                    current.setDate(current.getDate() + 1);
+                }
+                return counts;
+            };
+
+            const countsA = getDailyCounts(postsA, startA, endA);
+            const countsB = getDailyCounts(postsB, startB, endB);
+
+            // Stats A
+            const totalA = postsA.length;
+            const avgA = (totalA / (countsA.length || 1)).toFixed(1);
+
+            // Stats B
+            const totalB = postsB.length;
+            const avgB = (totalB / (countsB.length || 1)).toFixed(1);
+
+            // Display comparison stats
+            document.getElementById('totalPosts').innerHTML = `
+                <div style="font-size:0.8em; color:var(--primary)">A: ${totalA.toLocaleString()}</div>
+                <div style="font-size:0.8em; color:#f59e0b">B: ${totalB.toLocaleString()}</div>
+            `;
+            document.getElementById('avgPosts').innerHTML = `
+                <div style="font-size:0.8em; color:var(--primary)">A: ${avgA}</div>
+                <div style="font-size:0.8em; color:#f59e0b">B: ${avgB}</div>
+            `;
+
+            // Reset max heat since it's less relevant or just show A's
+            document.getElementById('heatPosts').textContent = Math.max(...countsA, ...countsB, 0).toLocaleString();
+
+            renderComparisonLineChart(countsA, countsB);
+
+            // Render Heatmap for Period A only (for simplicity)
+            const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
+            const VN_OFFSET = 7 * 60 * 60 * 1000;
+            postsA.forEach(post => {
+                const date = new Date(post.createdAt);
+                if (isNaN(date.getTime())) return;
+                const vnDate = new Date(date.getTime() + VN_OFFSET);
+                const hour = vnDate.getUTCHours();
+                const weekday = vnDate.getUTCDay();
+                if (hour >= 0 && weekday >= 0) matrix[weekday][hour]++;
+            });
+            const heatData = [];
+            let maxValue = 0;
+            for (let y = 0; y < 7; y++) {
+                for (let x = 0; x < 24; x++) {
+                    const value = matrix[y][x] || 0;
+                    heatData.push({ x, y, v: value });
+                    if (value > maxValue) maxValue = value;
+                }
+            }
+            renderHeatChart(heatData, maxValue);
+        }
+
+        function renderComparisonLineChart(dataA, dataB) {
+            const ctx = document.getElementById('postsChart').getContext('2d');
+            if (lineChart) lineChart.destroy();
+
+            // Create labels: Day 1, Day 2... based on max length
+            const maxLen = Math.max(dataA.length, dataB.length);
+            const labels = Array.from({ length: maxLen }, (_, i) => `Day ${i + 1}`);
+
+            lineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Period A',
+                            data: dataA,
+                            borderColor: '#37af8c', // Primary
+                            backgroundColor: 'rgba(55, 175, 140, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Period B',
+                            data: dataB,
+                            borderColor: '#f59e0b', // Amber
+                            backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { display: true },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => `Day ${items[0].dataIndex + 1}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
         }
 
         function calculateStats(data) {
