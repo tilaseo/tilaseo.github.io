@@ -368,6 +368,51 @@
             text-align: center;
             margin-bottom: 16px;
         }
+
+        .texas-clock {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 10px 24px;
+            border-radius: 99px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            margin-top: 24px;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .texas-clock:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            border-color: var(--primary-light);
+        }
+
+        .texas-clock .time {
+            color: var(--primary);
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.05em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .texas-clock .flag {
+            font-size: 1.5rem;
+            line-height: 1;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+        }
+
+        .texas-clock .label {
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-right: 4px;
+        }
     </style>
 </head>
 
@@ -380,6 +425,11 @@
         <header>
             <h1>Polymarket Tracker</h1>
             <p class="subtitle">Analytics & Account Dashboard</p>
+            <div class="texas-clock" title="Current Time in Texas">
+                <span class="flag">🇺🇸</span>
+                <span class="label">Texas (GMT-6)</span>
+                <span id="texasTime" class="time">--:--:--</span>
+            </div>
         </header>
 
         <div id="error" class="error"></div>
@@ -387,7 +437,7 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('account')">Account Overview</button>
             <button class="tab-btn" onclick="switchTab('elon')">Elon Musk Tracker</button>
-            <button class="tab-btn" onclick="switchTab('tsa')">TSA Data</button>
+
         </div>
 
         <div id="tab-account" class="tab-content active">
@@ -581,52 +631,13 @@
                 </div>
             </div>
         </div>
-        <div id="tab-tsa" class="tab-content">
-            <div class="card">
-                <div class="chart-header">
-                    <div class="chart-title">TSA Passenger Throughput (7-Day Moving Avg)</div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="tsaChart"></canvas>
-                </div>
-            </div>
-            <div class="card">
-                <div class="chart-header">
-                    <div style="flex:1;">
-                        <div class="chart-title">Passenger Volume by Period</div>
-                    </div>
-                    <div class="chart-controls" style="display:flex; gap:8px;">
-                        <button class="filter-btn active" onclick="filterTsaChart('ALL')">All</button>
-                        <button class="filter-btn" onclick="filterTsaChart('Q1')">Q1</button>
-                        <button class="filter-btn" onclick="filterTsaChart('Q2')">Q2</button>
-                        <button class="filter-btn" onclick="filterTsaChart('Q3')">Q3</button>
-                        <button class="filter-btn" onclick="filterTsaChart('Q4')">Q4</button>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="tsaFilterChart"></canvas>
-                </div>
-            </div>
-            <div class="card">
-                <div class="chart-header">
-                    <div class="chart-title">Weekly Passenger Volume</div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="tsaWeeklyChart"></canvas>
-                </div>
-            </div>
-        </div>
+
     </div>
 
     <script>
         let lineChart = null;
         let heatChart = null;
-        let tsaChart = null;
-        let tsaFilterChart = null;
-        let tsaWeeklyChart = null;
-        let tsaLabels = [];
-        let tsaSma2024 = [];
-        let tsaSma2025 = [];
+
 
         const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const primaryColor = '#37af8c';
@@ -647,32 +658,7 @@
             }
         }
 
-        function filterTsaChart(range) {
-            if (!tsaFilterChart) return;
 
-            document.querySelectorAll('.filter-btn').forEach(b => {
-                const text = b.innerText;
-                const match = (range === 'ALL' && text === 'All') || (range === text);
-                b.classList.toggle('active', match);
-            });
-
-            let startIndex = 0;
-            let endIndex = 366;
-
-            if (range === 'Q1') { startIndex = 0; endIndex = 90; }
-            else if (range === 'Q2') { startIndex = 90; endIndex = 181; }
-            else if (range === 'Q3') { startIndex = 181; endIndex = 273; }
-            else if (range === 'Q4') { startIndex = 273; endIndex = 366; }
-
-            const sliceLabels = tsaLabels.slice(startIndex, endIndex);
-            const sliceSma2024 = tsaSma2024.slice(startIndex, endIndex);
-            const sliceSma2025 = tsaSma2025.slice(startIndex, endIndex);
-
-            tsaFilterChart.data.labels = sliceLabels;
-            tsaFilterChart.data.datasets[0].data = sliceSma2024;
-            tsaFilterChart.data.datasets[1].data = sliceSma2025;
-            tsaFilterChart.update();
-        }
 
         function showLoading(show) {
             document.getElementById('loading').style.display = show ? 'flex' : 'none';
@@ -692,9 +678,7 @@
             const content = document.getElementById(`tab-${tab}`);
             if (content) content.classList.add('active');
 
-            if (tab === 'tsa') {
-                loadTsaData();
-            }
+
         }
 
         function toggleCompare() {
@@ -1441,240 +1425,7 @@
             });
         }
 
-        async function loadTsaData() {
-            if (tsaChart) return;
 
-            showLoading(true);
-            try {
-                const [res2024, res2025] = await Promise.all([
-                    fetch('/2024.csv').then(r => r.text()),
-                    fetch('/2025.csv').then(r => r.text())
-                ]);
-
-                const parseCSV = (csvText) => {
-                    const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
-                    const data = [];
-                    lines.forEach(line => {
-                        const match = line.match(/^(\d{1,2}\/\d{1,2}\/\d{4}),"([\d,]+)"/);
-                        if (match) {
-                            const dateStr = match[1];
-                            const valueStr = match[2].replace(/,/g, '');
-                            data.push({
-                                date: dateStr,
-                                value: parseInt(valueStr, 10),
-                                objDate: new Date(dateStr)
-                            });
-                        }
-                    });
-                    return data;
-                };
-
-                const raw2024 = parseCSV(res2024);
-                const raw2025 = parseCSV(res2025);
-
-                const calculateSMA = (data, windowSize) => {
-                    let results = [];
-                    for (let i = 0; i < data.length; i++) {
-                        if (i < windowSize - 1) {
-                            results.push(null);
-                            continue;
-                        }
-                        let sum = 0;
-                        for (let j = 0; j < windowSize; j++) {
-                            sum += data[i - j].value;
-                        }
-                        results.push(sum / windowSize);
-                    }
-                    return results;
-                };
-
-                tsaSma2024 = calculateSMA(raw2024, 7);
-                tsaSma2025 = calculateSMA(raw2025, 7);
-
-                // Populate Global Labels
-                tsaLabels = raw2024.map(d => {
-                    return d.objDate.toLocaleString('en-US', { month: 'short', day: 'numeric' });
-                });
-
-                // Chart 1: Static Full View
-                const ctx = document.getElementById('tsaChart').getContext('2d');
-                tsaChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: tsaLabels,
-                        datasets: [
-                            {
-                                label: '2024',
-                                data: tsaSma2024,
-                                borderColor: '#94a3b8',
-                                borderWidth: 1.5,
-                                pointRadius: 0,
-                                borderDash: [4, 4],
-                                tension: 0.4
-                            },
-                            {
-                                label: '2025',
-                                data: tsaSma2025,
-                                borderColor: '#37af8c',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.4,
-                                fill: true,
-                                backgroundColor: 'rgba(55, 175, 140, 0.05)'
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: { mode: 'index', intersect: false },
-                        plugins: {
-                            legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 8, usePointStyle: true } },
-                            tooltip: { callbacks: { label: c => c.dataset.label + ': ' + (c.raw / 1000000).toFixed(2) + 'M' } }
-                        },
-                        scales: {
-                            y: { ticks: { callback: v => (v / 1000000).toFixed(1) + 'M', font: { size: 11, weight: '500' } }, grid: { display: true, color: 'rgba(0,0,0,0.03)' } },
-                            x: { grid: { display: false }, ticks: { maxTicksLimit: 12, maxRotation: 0, font: { size: 11, weight: '500' } } }
-                        }
-                    }
-                });
-
-                // Chart 2: Filterable View
-                const ctxFilter = document.getElementById('tsaFilterChart').getContext('2d');
-                tsaFilterChart = new Chart(ctxFilter, {
-                    type: 'line',
-                    data: {
-                        labels: [...tsaLabels], // Clone
-                        datasets: [
-                            {
-                                label: '2024',
-                                data: [...tsaSma2024],
-                                borderColor: '#64748b',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                borderDash: [2, 2],
-                                tension: 0.4
-                            },
-                            {
-                                label: '2025',
-                                data: [...tsaSma2025],
-                                borderColor: '#37af8c',
-                                borderWidth: 3,
-                                pointRadius: 0,
-                                tension: 0.4
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: { mode: 'index', intersect: false },
-                        plugins: {
-                            legend: { display: true, position: 'top', align: 'end', labels: { boxWidth: 8, usePointStyle: true } },
-                            tooltip: { callbacks: { label: c => c.dataset.label + ': ' + (c.raw / 1000000).toFixed(2) + 'M' } }
-                        },
-                        scales: {
-                            y: { ticks: { callback: v => (v / 1000000).toFixed(1) + 'M', font: { size: 11, weight: '500' } }, grid: { display: true, color: 'rgba(0,0,0,0.03)' } },
-                            x: { grid: { display: false }, ticks: { maxTicksLimit: 12, maxRotation: 0, font: { size: 11, weight: '500' } } }
-                        }
-                    }
-                });
-
-                // --- Calculate Weekly ---
-                const getWeekNumber = (d) => {
-                    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-                    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-                    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-                    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-                    return weekNo;
-                };
-
-                const calculateWeekly = (data) => {
-                    const weeks = Array(54).fill(0);
-                    data.forEach(d => {
-                        const w = getWeekNumber(d.objDate);
-                        if (w >= 0 && w <= 53) weeks[w] += d.value;
-                    });
-                    return weeks;
-                };
-
-                const weekly2024 = calculateWeekly(raw2024);
-                const weekly2025 = calculateWeekly(raw2025);
-
-                const weekLabels = Array.from({ length: 53 }, (_, i) => `W${i}`);
-                const ctxWeekly = document.getElementById('tsaWeeklyChart').getContext('2d');
-                tsaWeeklyChart = new Chart(ctxWeekly, {
-                    type: 'bar',
-                    data: {
-                        labels: weekLabels.slice(1),
-                        datasets: [
-                            {
-                                label: '2024',
-                                data: weekly2024.slice(1),
-                                backgroundColor: '#cbd5e1',
-                                borderRadius: 3,
-                                barPercentage: 0.7,
-                                categoryPercentage: 0.8
-                            },
-                            {
-                                label: '2025',
-                                data: weekly2025.slice(1),
-                                backgroundColor: '#37af8c',
-                                borderRadius: 3,
-                                barPercentage: 0.7,
-                                categoryPercentage: 0.8
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: true, position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 6 } },
-                            tooltip: { callbacks: { label: c => c.dataset.label + ': ' + (c.raw / 1000000).toFixed(2) + 'M' } }
-                        },
-                        scales: {
-                            y: { beginAtZero: true, ticks: { callback: v => (v / 1000000).toFixed(0) + 'M', font: { size: 11 } } },
-                            x: {
-                                grid: { display: false },
-                                ticks: {
-                                    maxTicksLimit: 13,
-                                    font: { size: 11, weight: '600' },
-                                    callback: function (val, index) {
-                                        // Map week index 0-51 to Month
-                                        // val is index in labels array. labels are W1...W52
-                                        // 52 weeks / 12 months ~ 4.3 weeks per month
-                                        // Simple mapping:
-                                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                                        const monthIndex = Math.floor(val / 4.3);
-                                        // Only show label if it's start of month roughly
-                                        // Let's just return Month name for every ~4th tick
-                                        // This callback replaces W1... with Month names
-                                        // Or we can just keep W1 but make it clearer.
-                                        // User asked to make timeline CLEARER.
-                                        // Let's use Month Names instead of Weeks.
-                                        if (monthIndex >= 0 && monthIndex < 12) {
-                                            // Check if this is the first week of the month
-                                            // val=0 (W1) -> Jan
-                                            // val=4 (W5) -> Feb
-                                            const approxWeek = Math.round(monthIndex * 4.3);
-                                            if (Math.abs(val - approxWeek) < 2) return months[monthIndex];
-                                        }
-                                        return '';
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-
-            } catch (error) {
-                console.error('Error loading TSA data:', error);
-                showError("Failed to load TSA data.");
-            } finally {
-                showLoading(false);
-            }
-        }
 
         function loadDashboard() {
             // Placeholder if missing
@@ -1686,7 +1437,27 @@
             errorDiv.style.display = message ? 'block' : 'none';
         }
 
-        window.onload = () => loadDashboard();
+        function updateTexasClock() {
+            const options = {
+                timeZone: 'America/Chicago',
+                hour12: true,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            const now = new Date();
+            const formatter = new Intl.DateTimeFormat('en-US', options);
+            const timeString = formatter.format(now);
+
+            const el = document.getElementById('texasTime');
+            if (el) el.textContent = timeString;
+        }
+
+        window.onload = () => {
+            loadDashboard();
+            updateTexasClock();
+            setInterval(updateTexasClock, 1000);
+        };
     </script>
 </body>
 
