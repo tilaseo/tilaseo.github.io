@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;family=Be+Vietnam+Pro:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error-container": "#93000a",
+                    "surface": "#fff9e6",
+                    "on-tertiary-container": "#2f474d",
+                    "primary-fixed": "#c5e9ed",
+                    "on-surface": "#1e1c0b",
+                    "outline": "#717879",
+                    "surface-container-high": "#eee9ce",
+                    "tertiary-container": "#9cb5bc",
+                    "surface-bright": "#fff9e6",
+                    "surface-container-highest": "#e9e3c8",
+                    "surface-container": "#f4eed3",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed-variant": "#2a4c50",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "background": "#fff9e6",
+                    "primary": "#426468",
+                    "secondary-fixed-dim": "#c0c7d3",
+                    "on-secondary-fixed": "#151c25",
+                    "secondary-container": "#d9e0ec",
+                    "on-tertiary-fixed": "#051f24",
+                    "on-primary-container": "#27494c",
+                    "inverse-primary": "#a9cdd1",
+                    "on-secondary-container": "#5c636e",
+                    "surface-container-lowest": "#ffffff",
+                    "outline-variant": "#c1c8c8",
+                    "surface-dim": "#e0dac0",
+                    "inverse-on-surface": "#f7f1d6",
+                    "secondary-fixed": "#dce3ef",
+                    "secondary": "#585f69",
+                    "tertiary-fixed": "#cde7ee",
+                    "on-secondary-fixed-variant": "#404751",
+                    "on-tertiary-fixed-variant": "#324a50",
+                    "tertiary": "#4a6268",
+                    "primary-container": "#94b7bb",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "on-surface-variant": "#414849",
+                    "tertiary-fixed-dim": "#b1cbd2",
+                    "on-primary-fixed": "#002023",
+                    "on-background": "#1e1c0b",
+                    "surface-tint": "#426468",
+                    "surface-container-low": "#faf4d9",
+                    "surface-variant": "#e9e3c8",
+                    "inverse-surface": "#33311f",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#a9cdd1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Noto Serif"],
+                    "body": ["Be Vietnam Pro"],
+                    "label": ["Be Vietnam Pro"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Be Vietnam Pro', sans-serif; background-color: #FFF9E6; color: #1E1C0B; -webkit-font-smoothing: antialiased; }
+        .editorial-shadow { box-shadow: 0 8px 32px rgba(66, 100, 104, 0.08); }
+        .glass-nav { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar Component -->
+<nav class="fixed top-0 w-full z-50 bg-[#FFF9E6]/70 glass-nav">
+<div class="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
+<span class="text-2xl font-['Noto_Serif'] font-bold text-[#426468] tracking-tighter">Portfolio</span>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-['Noto_Serif'] font-medium text-[#426468]/60 hover:text-[#426468] transition-all duration-300 hover:opacity-80" href="#">Trang chủ</a>
+<a class="font-['Noto_Serif'] font-medium text-[#426468] border-b-2 border-[#426468] pb-1 transition-all duration-300 hover:opacity-80" href="#">Dự án</a>
+<a class="font-['Noto_Serif'] font-medium text-[#426468]/60 hover:text-[#426468] transition-all duration-300 hover:opacity-80" href="#">Dịch vụ</a>
+<a class="font-['Noto_Serif'] font-medium text-[#426468]/60 hover:text-[#426468] transition-all duration-300 hover:opacity-80" href="#">Liên hệ</a>
+</div>
+<button class="bg-gradient-to-r from-primary to-primary-container text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-300 active:scale-95">
+                Bắt đầu dự án
+            </button>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-32 pb-24 px-8 max-w-7xl mx-auto">
+<!-- Hero Section: Editorial Header -->
+<header class="mb-24 flex flex-col items-start max-w-4xl">
+<h1 class="font-headline text-5xl md:text-6xl text-primary font-bold tracking-tight mb-8 leading-tight">
+                Các Chiến dịch Tiêu biểu
+            </h1>
+<p class="font-body text-xl text-on-surface-variant leading-relaxed opacity-90 max-w-2xl">
+                Tuyển tập các dự án chiến lược đã chuyển đổi sự hiện diện kỹ thuật số thành uy tín thị trường có thể đo lường được.
+            </p>
+</header>
+<!-- Project Grid: Bento/Asymmetric Layout -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-12">
+<!-- Project 1: E-commerce Growth Strategy -->
+<div class="md:col-span-8 group">
+<div class="bg-surface-container-low rounded-xl overflow-hidden editorial-shadow transition-all duration-500 hover:-translate-y-2">
+<div class="relative h-[480px]">
+<img alt="E-commerce Growth Strategy" class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" data-alt="Modern minimalist aesthetic of luxury lifestyle products on white pedestals with soft morning sunlight casting elegant shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeOOaSz4T2pSMXIhCxfshulwBjw4nLH9JIXSytOjVdUEtI7l5t8UjKCtzuBZ4qj_JI8VIud1CtHYnHpr748Zf2ziJ7iYAghuu_KRin-i-LFtVUtHi2I6idxwcbrv0tRqMdmCW-XlLBtVyHzvKEvyJz4ku2WGl0seZqS7eOrrHnYFqHx_UBH4QgToviN4pFIK5mhNucyRcnVcwh-jSRyYoRwozYT5Q3GY_Baxle2V6x-9kw8FPTQP5yBmJCV23Gdf42ogh25lzgOrg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent"></div>
+<div class="absolute bottom-8 left-8">
+<span class="bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-sm font-medium mb-4 inline-block">E-commerce Strategy</span>
+<h2 class="font-headline text-3xl text-white font-bold leading-tight">Chiến lược tăng trưởng E-commerce</h2>
+</div>
+</div>
+<div class="p-10 bg-surface-container-lowest">
+<div class="flex flex-wrap gap-12">
+<div>
+<p class="text-primary/60 text-xs uppercase tracking-widest mb-1">Kết quả</p>
+<p class="font-headline text-4xl text-primary font-bold">+240% ROI</p>
+</div>
+<div>
+<p class="text-primary/60 text-xs uppercase tracking-widest mb-1">Lưu lượng</p>
+<p class="font-headline text-4xl text-primary font-bold">12k+ khách/tháng</p>
+</div>
+</div>
+<div class="mt-8 pt-8 border-t border-outline-variant/15">
+<p class="font-body text-on-surface-variant leading-relaxed">
+                                Tối ưu hóa phễu chuyển đổi và trải nghiệm khách hàng cho thương hiệu thời trang cao cấp, dẫn đến sự tăng trưởng doanh thu đột phá trong 6 tháng.
+                            </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Project 2: SaaS Lead Gen Campaign -->
+<div class="md:col-span-4 mt-0 md:mt-24 group">
+<div class="bg-surface-container-low rounded-xl overflow-hidden editorial-shadow transition-all duration-500 hover:-translate-y-2">
+<div class="relative h-[320px]">
+<img alt="SaaS Lead Gen Campaign" class="w-full h-full object-cover grayscale-[40%] group-hover:grayscale-0 transition-all duration-700" data-alt="Sleek modern office interior with glass walls and professional atmosphere in soft blue and mint green color palette" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMwsXiq8iA5RQO_fs7c2WAMoG7OfATtikuAXNHdW9tMoOc_kGTmlyKGPqmibYOOLyfXzPq3tNzFbapDqMDThpVpW0HRxSxdeUaB2-F3gQr5xs9x8L7fPPy9HVx2Bc7N5EC1Z6OJBc9rMAz5xrSQoR7VBlfTl0-6YkYcyLFq79ZPIacOm89l25Pc6FgWnTpmCGt3bAM9rVuZKs62G_VoNFU0bGe_nBtPrjguDokNsfBiydRjCa37F_RQKahrAfE6EiPKB4Pct-lKQo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<span class="bg-primary-container text-on-primary-container px-4 py-1.5 rounded-full text-sm font-medium mb-3 inline-block">SaaS / B2B</span>
+<h2 class="font-headline text-2xl text-white font-bold leading-tight">Chiến dịch tạo khách hàng tiềm năng SaaS</h2>
+</div>
+</div>
+<div class="p-8 bg-surface-container-lowest">
+<div>
+<p class="text-primary/60 text-xs uppercase tracking-widest mb-1">Lead Conversion</p>
+<p class="font-headline text-3xl text-primary font-bold">+185%</p>
+</div>
+<p class="mt-6 font-body text-on-surface-variant text-sm leading-relaxed">
+                            Xây dựng hệ thống tự động hóa marketing giúp giảm 40% chi phí sở hữu khách hàng (CAC).
+                        </p>
+</div>
+</div>
+</div>
+<!-- Project 3: Omnichannel Retargeting -->
+<div class="md:col-span-5 group">
+<div class="bg-surface-container-low rounded-xl overflow-hidden editorial-shadow transition-all duration-500 hover:-translate-y-2">
+<div class="relative h-[400px]">
+<img alt="Omnichannel Retargeting" class="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-700" data-alt="Collaborative workspace with creative professionals in deep discussion, soft focus background, editorial photography style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRDkmfjGmgHopj2pof69OM-ty-acQ6tge9RsBlLr3TOeum34_Km5ZjRvVsBQ-IvQBDVIs9ZWeX58pt21yCf1t2TgrH0R2DVWE52vu4T6DjB8zxRcbKvLnFY9t2p99WyHBSBnDkzaRQuClC-O5q1pcaVhdu2QiQLyLKguw5NdpJyIsoNPVVQgJEjurqGigsCHCbeP9eAu77uSZ4ewkP4qn3VoKqwNLWCBsYge35FkX8_IOj6xpUPDig0787TWsoeJ2-nyNkMnGX1ZQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<span class="bg-tertiary-container text-on-tertiary-container px-4 py-1.5 rounded-full text-sm font-medium mb-3 inline-block">Paid Ads</span>
+<h2 class="font-headline text-2xl text-white font-bold leading-tight">Tiếp thị lại đa kênh</h2>
+</div>
+</div>
+<div class="p-8 bg-surface-container-lowest">
+<div class="flex gap-8">
+<div>
+<p class="text-primary/60 text-xs uppercase tracking-widest mb-1">CPA Reduction</p>
+<p class="font-headline text-3xl text-primary font-bold">-32%</p>
+</div>
+<div>
+<p class="text-primary/60 text-xs uppercase tracking-widest mb-1">ROAS</p>
+<p class="font-headline text-3xl text-primary font-bold">5.8x</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Project 4: Strategic Brand Refresh -->
+<div class="md:col-span-7 group -mt-0 md:-mt-12">
+<div class="bg-surface-container-low rounded-xl overflow-hidden editorial-shadow transition-all duration-500 hover:-translate-y-2">
+<div class="relative h-[440px]">
+<img alt="Strategic Brand Refresh" class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" data-alt="High-end branding elements including stationery and business cards on a clean textured surface with ethereal lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDips9cfyXAyM-K2_ocqFJCXjV7cSZQMyDZU-69jHzqbScsV336GEvtpBEXC7EeP4yY92AWLf3udgZNJgYFJXpHuIc6jHU9Fbwh4PxIazePm1ASNs13PVP17mTFEqhlyUP34P9tNvVEVwu6DCpkJJLA2Fx4u0G9Qn-3ruyw2wJJjYc7F9qF-I-jcoFRXBwTcuL8CoT_HoHZKD90vGF-R5ijMbBFxtSrjwAJfeYt0PM7CrOaTQbgC9-aXqCj0HhHNAxkY5C3MxKz9og"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent"></div>
+<div class="absolute bottom-8 left-8">
+<span class="bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-sm font-medium mb-4 inline-block">Branding</span>
+<h2 class="font-headline text-3xl text-white font-bold leading-tight">Làm mới thương hiệu chiến lược</h2>
+</div>
+</div>
+<div class="p-10 bg-surface-container-lowest">
+<div class="flex gap-12">
+<div>
+<p class="text-primary/60 text-xs uppercase tracking-widest mb-1">Brand Awareness</p>
+<p class="font-headline text-4xl text-primary font-bold">+300%</p>
+</div>
+</div>
+<p class="mt-6 font-body text-on-surface-variant leading-relaxed">
+                            Tái định vị thương hiệu cho tập đoàn dịch vụ tài chính, kiến tạo ngôn ngữ thiết kế và thông điệp hiện đại, uy tín.
+                        </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Editorial Quote Signature Component -->
+<section class="my-32 -mx-8 py-24 px-8 md:px-24 bg-secondary-container relative overflow-hidden">
+<div class="relative z-10 max-w-4xl">
+<span class="material-symbols-outlined text-primary text-6xl opacity-30 mb-8 block" style="font-variation-settings: 'FILL' 1;">format_quote</span>
+<blockquote class="font-headline italic text-3xl md:text-4xl text-primary leading-tight mb-8">
+                    "Marketing kỹ thuật số không chỉ là về việc hiển thị; đó là về việc trở thành lựa chọn không thể thay thế trong tâm trí khách hàng."
+                </blockquote>
+<cite class="font-body font-bold text-primary not-italic tracking-wide">— CEO, Global Fashion Hub</cite>
+</div>
+<!-- Decorative circle -->
+<div class="absolute -right-24 -bottom-24 w-96 h-96 bg-primary-container/20 rounded-full blur-3xl"></div>
+</section>
+<!-- Final Call to Action -->
+<section class="py-24 text-center max-w-3xl mx-auto">
+<h2 class="font-headline text-4xl md:text-5xl text-primary font-bold mb-8">Sẵn sàng trở thành câu chuyện thành công tiếp theo?</h2>
+<p class="font-body text-on-surface-variant mb-12 text-lg">
+                Hãy cùng thảo luận về mục tiêu của bạn và cách chúng tôi có thể cùng nhau vượt qua chúng.
+            </p>
+<button class="bg-gradient-to-r from-primary to-primary-container text-white px-10 py-5 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 active:scale-95 editorial-shadow">
+                Bắt đầu dự án
+            </button>
+</section>
+</main>
+<!-- Footer Component -->
+<footer class="bg-[#FAF4D9] dark:bg-[#1E1C0B] w-full py-12 px-8">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6 max-w-7xl mx-auto">
+<p class="font-['Be_Vietnam_Pro'] text-sm tracking-wide text-[#426468] dark:text-[#94B7BB]">
+                © 2024 Digital Marketing Portfolio. Tất cả các quyền được bảo lưu.
+            </p>
+<div class="flex gap-8">
+<a class="font-['Be_Vietnam_Pro'] text-sm tracking-wide text-[#426468] dark:text-[#94B7BB] opacity-70 hover:opacity-100 hover:text-[#94B7BB] dark:hover:text-[#D9E0EC] transition-all duration-300" href="#">LinkedIn</a>
+<a class="font-['Be_Vietnam_Pro'] text-sm tracking-wide text-[#426468] dark:text-[#94B7BB] opacity-70 hover:opacity-100 hover:text-[#94B7BB] dark:hover:text-[#D9E0EC] transition-all duration-300" href="#">Instagram</a>
+</div>
+</div>
+</footer>
+</body></html>
